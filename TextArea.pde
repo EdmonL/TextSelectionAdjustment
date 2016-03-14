@@ -111,7 +111,6 @@ class TextArea {
             selected = new TextSegment();
             selected.textBuilder.append(c);
             selected.x = marginLeft + Math.round(lineWidth);
-            println(lineWidth);
             selected.y = posY;
           } else {
             selected.textBuilder.append(c);
