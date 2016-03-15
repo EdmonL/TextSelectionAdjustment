@@ -1,17 +1,25 @@
+import java.awt.Point;
 import vialab.SMT.*;
 
 TextArea textArea;
+boolean showTouch = true;
 
 void setup() {
-  size(300, 600, SMT.RENDERER);
+  size(400, 600, SMT.RENDERER);
   SMT.init(this, TouchSource.AUTOMATIC);
   SMT.setWarnUnimplemented(false);
+  if (!showTouch) {
+    SMT.setTouchDraw(TouchDraw.NONE);
+  }
 
-  textArea = new TextArea(0, 0, width, height, createFont("Arial", 20));
-  textArea.textSize = 20;
-  textArea.marginLeft = 0;
-  textArea.marginTop = 0;
-  textArea.marginBottom = 0;
+  textArea = new TextArea(10, 10, width - 20, height - 20, createFont("Arial", 20));
+  textArea.textColor = 20;
+  textArea.backgroundColor = 255;
+  textArea.marginLeft = 10;
+  textArea.marginRight = 10;
+  textArea.marginTop = 5;
+  textArea.marginBottom = 5;
+  textArea.lineSpacing = 1.5;
   textArea.text = "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
     + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
     + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
@@ -21,14 +29,15 @@ void setup() {
     + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
     + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
     + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------===================";
-  textArea.selectionStart = 500;
-  textArea.selectionEnd = 510;
+  textArea.setSelection(200, 500);
 
-  SMT.add(new PinchSelectingZone(0, 0, width, height, textArea));
+  final PinchSelectingZone z = new PinchSelectingZone(0, 0, width, height, textArea);
+  z.showInnerPoints = showTouch;
+  SMT.add(z);
 }
 
 void draw() {
-  background(255);
+  background(200);
   textArea.draw();
 }
 

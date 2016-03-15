@@ -13,32 +13,20 @@ static final class LineRecord implements Comparable<LineRecord> {
     this.y = y;
   }
 
-  @Override
-  public int compareTo(final LineRecord o) {
+  @Override public int compareTo(final LineRecord o) {
     return number - o.number;
   }
 }
 
 static final class LineOffsetComparator implements Comparator<LineRecord> {
-  @Override
-  public int compare(final LineRecord l1, final LineRecord l2) {
+  @Override public int compare(final LineRecord l1, final LineRecord l2) {
     return l1.offset - l2.offset;
   }
 }
 
 static final class LineYComparator implements Comparator<LineRecord> {
-  @Override
-  public int compare(final LineRecord l1, final LineRecord l2) {
+  @Override public int compare(final LineRecord l1, final LineRecord l2) {
     return l1.y - l2.y;
-  }
-}
-
-static class Position {
-  final int x;
-  final int y;
-  Position(final int x, final int y) {
-    this.x = x;
-    this.y = y;
   }
 }
 
@@ -48,7 +36,6 @@ class TextArea {
   private final int x, y, width, height;
 
   String text = "";
-  int textSize = 14;
   color textColor = 0, backgroundColor = 255;
   int marginTop = 0, marginLeft = 0, marginBottom = 0, marginRight = 0;
   float lineSpacing = 1.0;
@@ -56,7 +43,7 @@ class TextArea {
   private int selectionStart, selectionEnd;
 
   private final ArrayList<LineRecord> lines = new ArrayList<LineRecord>();
-  private int fontHeight, lineHeight, textWidth, textBottom;
+  private int fontHeight, lineHeight, textWidth, textRight, textBottom;
 
   TextArea(final int x, final int y, final int width, final int height, final PFont font) {
     this.x = x;
@@ -69,18 +56,63 @@ class TextArea {
   void redraw() {
     lines.clear();
   }
+  
+  Point getPointByInnerPoint(final Point p) {
+    return new Point(x + p.x, y + p.y);
+  }
 
-  Position getPosition(final int offset) {
+  // inner means relative to the text area rather than the window, display or screen
+  Point getInnerPointByTextOffset(final int offset) {
     int row = Collections.binarySearch(lines, new LineRecord(0, offset, 0, 0, 0), new LineOffsetComparator());
     if (row < 0) {
       row = -row - 2;
     }
     final LineRecord line = lines.get(row);
-    return new Position(line.x + Math.round(textWidth(text.substring(line.offset, offset))), line.y + Math.round(fontHeight / 2.0));
+    return new Point(line.x + Math.round(textWidth(text.substring(line.offset, offset))), line.y + Math.round(fontHeight / 2.0));
   }
 
-  int getTextOffset(final int x, final int y) {
-    return 0;
+
+  int getTextOffsetByInnerPoint(final Point p) {
+    clampIntoTextArea(p);
+    int row = Collections.binarySearch(lines, new LineRecord(0, 0, 0, 0, p.y), new LineYComparator());
+    if (row < 0) {
+      row = -row - 2;
+    }
+    LineRecord line = lines.get(row);
+    if (row != lines.size() - 1) {
+      final LineRecord nextLine = lines.get(row + 1);
+      if (p.y >= Math.round((nextLine.y + line.y + fontHeight) / 2.0)) {
+        line = nextLine;
+        ++row;
+      }
+    }
+    final int lineWidth = Math.round(textWidth(text.substring(line.offset, line.end)));
+    int offset = line.offset + Math.round((float)(p.x - line.x) / lineWidth * (line.end - line.offset));
+    offset = clampInt(offset, line.offset, line.end);
+    int x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset)));
+    int x1 = x0;
+    if (p.x < x0) {
+      if (offset <= line.offset) {
+        return offset;
+      }
+      do {
+        --offset;
+        x1 = x0;
+        x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset)));
+      } 
+      while (p.x < x0 && offset > line.offset);
+      return abs(p.x - x0) < abs(x1 - p.x) ? offset : offset + 1;
+    }
+    if (offset >= line.end) {
+      return offset;
+    }
+    do {
+      ++offset;
+      x1 = x0;
+      x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset)));
+    } 
+    while (p.x >= x0 && offset < line.end);
+    return abs(x0 - p.x) <= abs(p.x - x1) ? offset : offset - 1;
   }
 
   int getSelectionStart() {
@@ -89,6 +121,11 @@ class TextArea {
 
   int getSelectionEnd() {
     return selectionEnd;
+  }
+
+  int getRowByTextOffset(final int offset) {
+    final int row = Collections.binarySearch(lines, new LineRecord(0, offset, 0, 0, 0), new LineOffsetComparator());
+    return row < 0 ? -row - 2 : row;
   }
 
   boolean hasSelection() {
@@ -111,21 +148,19 @@ class TextArea {
 
   void draw() {
     pushStyle();
-    fill(backgroundColor);
-    rectMode(CORNER);
+    background(backgroundColor);
     noStroke();
-    rect(x, y, width, height);
+    rectMode(CORNER);
 
     textAlign(LEFT, TOP);
     textFont(font);
-    textSize(textSize);
     fill(textColor);
 
     prepareText();
 
     for (final LineRecord line : lines) {
       final String lineText = text.substring(line.offset, line.end);
-      text(lineText, line.x, line.y);
+      text(lineText, x + line.x, y + line.y);
       if (selectionStart < selectionEnd && selectionStart < line.end && selectionEnd > line.offset) {
         String selectedText = null;
         int selectionX;
@@ -145,10 +180,12 @@ class TextArea {
           }
         }
         if (selectedText != null) {
+          selectionX += x;
+          final int selectionY = y + line.y;
           fill(selectionBackgroudColor);
-          rect(selectionX, line.y, textWidth(selectedText), fontHeight);
+          rect(selectionX, selectionY, textWidth(selectedText), fontHeight);
           fill(selectionFrontColor);
-          text(selectedText, selectionX, line.y);
+          text(selectedText, selectionX, selectionY);
           fill(textColor);
         }
       }
@@ -166,7 +203,8 @@ class TextArea {
     }
     fontHeight = Math.round(textAscent() + textDescent());
     lineHeight = Math.round(fontHeight * lineSpacing);
-    textWidth = width - marginLeft - marginRight;
+    textRight = width - marginRight;
+    textWidth = textRight - marginLeft;
     textBottom = height - marginBottom;
     final int textLength = text.length();
     int posY = marginTop;
@@ -201,7 +239,12 @@ class TextArea {
     }
   }
 
-  private int clampSelection(int pos) {
+  private void clampIntoTextArea(final Point p) {
+    p.x = clampInt(p.x, marginLeft, textRight);
+    p.y = clampInt(p.y, marginTop, textBottom);
+  }
+
+  private int clampSelection(final int pos) {
     if (pos < 0) {
       return 0;
     }
