@@ -1,14 +1,17 @@
+import java.awt.Color;
+
 static class PinchSelectingZone extends Zone {
 
-  boolean showInnerPoints = false;
+  boolean showTouches = false;
 
   private static final class TouchRecord {
-    int offset;
-    Point point, innerPoint;
-    color myColor;
+    long id;
+    Point point;
+    Point innerPoint;
+    Color myColor;
 
-    TouchRecord(final int offset, final Point point, final Point innerPoint) {
-      this.offset = offset;
+    TouchRecord(long id, final Point point, final Point innerPoint) {
+      this.id = id;
       this.point = point;
       this.innerPoint = innerPoint;
     }
@@ -56,31 +59,75 @@ static class PinchSelectingZone extends Zone {
 
     final Point lip = ltr.innerPoint; // last inner point
     final Point cip = new Point(lip.x + cp.x - lp.x, lip.y + cp.y - lp.y);
-    final int lo = ltr.offset, oo = otr.offset;
-    final int co = textArea.getTextOffsetByInnerPoint(cip);
-    final int lr = textArea.getRowByTextOffset(lo);
-    final int cr = textArea.getRowByTextOffset(co);
-    final int or = textArea.getRowByTextOffset(oo);
+    final TextPosition ltp = textArea.getTextPositionByInnerPoint(lip);
+    final TextPosition otp = textArea.getTextPositionByInnerPoint(otr.innerPoint);
+
+    boolean switchRecords = false;
+
+    // visual consistency
+    if (cp.y < oTouch.y && cip.y > otr.innerPoint.y) {
+      if (lip.y <= otr.innerPoint.y) {
+        cip.y = otr.innerPoint.y;
+      } else {
+        switchRecords = true;
+      }
+    } else if (cp.y > oTouch.y && cip.y < otr.innerPoint.y) {
+      if (lip.y >= otr.innerPoint.y) {
+        cip.y = otr.innerPoint.y;
+      } else {
+        switchRecords = true;
+      }
+    }
+
+    final TextPosition ctp = textArea.getTextPositionByInnerPoint(cip);
+
+    // selection should not disappear
+    if (ctp.offset == otp.offset) {
+      final Point currentInnerPoint = textArea.getInnerPointByTextPosition(ctp);
+      if (ctp.offset == textArea.getLineEnd(ctp.row)) {
+        --ctp.offset;
+        cip.x = (int)Math.ceil((currentInnerPoint.x + textArea.getInnerPointByTextPosition(ctp).x) / 2.0) - 1;
+      } else if (ctp.offset == textArea.getLineOffset(ctp.row)) {
+        ++ctp.offset;
+        cip.x = (int)Math.ceil((currentInnerPoint.x + textArea.getInnerPointByTextPosition(ctp).x) / 2.0);
+      } else if (lip.x < otr.innerPoint.x) {
+        --ctp.offset;
+        cip.x = (int)Math.ceil((currentInnerPoint.x + textArea.getInnerPointByTextPosition(ctp).x) / 2.0) - 1;
+      } else {
+        ++ctp.offset;
+        cip.x = (int)Math.ceil((currentInnerPoint.x + textArea.getInnerPointByTextPosition(ctp).x) / 2.0);
+      }
+    }
 
     final TouchRecord ctr = ltr;
-    ctr.offset = co;
     ctr.point = cp;
     ctr.innerPoint = cip;
-    textArea.setSelection(ctr.offset, otr.offset);
+    textArea.setSelection(ctp.offset, otp.offset);
+    if (switchRecords) {
+      ctr.innerPoint = otr.innerPoint;
+      otr.innerPoint = cip;
+    }
   }
 
   @Override public void touch() {
   }
 
   @Override public void draw() {
-    if (showInnerPoints) {
+    if (showTouches) {
       pushStyle();
       ellipseMode(RADIUS);
+      textAlign(LEFT, TOP);
       noStroke();
       for (final TouchRecord r : touches.values ()) {
         final Point center = textArea.getPointByInnerPoint(r.innerPoint);
-        fill(r.myColor);
+        final Color c = r.myColor;
+        fill(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
         ellipse(center.x, center.y, 5, 5);
+        fill(c.getRed(), c.getGreen(), c.getBlue(), 255);
+        textSize(16);
+        text(center.x + "," + center.y, center.x + 1, center.y + 1);
+        textSize(20);
+        text(r.point.x + "," + r.point.y, r.point.x + 3, r.point.y + 3);
       }
       popStyle();
     }
@@ -127,13 +174,15 @@ static class PinchSelectingZone extends Zone {
     }
     final TouchRecord[] tr = new TouchRecord[2];
     for (int i = 0; i < 2; ++i) {
-      tr[i] = new TouchRecord(s[i], new Point(ts[i].x, ts[i].y), textArea.getInnerPointByTextOffset(s[i]));
+      tr[i] = new TouchRecord(ts[i].sessionID, new Point(ts[i].x, ts[i].y), textArea.getInnerPointByTextOffset(s[i]));
       touches.put(ts[i].sessionID, tr[i]);
     }
-    ts[0].setTint(190, 50, 50, 200);
-    tr[0].myColor = 0xC8BE3232;
-    ts[1].setTint(50, 50, 190, 200);
-    tr[1].myColor = 0xC83232BE;
+    tr[0].myColor = new Color(190, 50, 50, 200);
+    tr[1].myColor = new Color(50, 50, 190, 200);
+    for (int i = 0; i < 2; ++i) {
+      final Color c = tr[i].myColor;
+      ts[i].setTint(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
+    }
   }
 }
 

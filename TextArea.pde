@@ -30,6 +30,15 @@ static final class LineYComparator implements Comparator<LineRecord> {
   }
 }
 
+static class TextPosition {
+  int offset;
+  final int row;
+  TextPosition(final int offset, final int row) {
+    this.offset = offset;
+    this.row = row;
+  }
+}
+
 class TextArea {
 
   private final PFont font;
@@ -56,23 +65,42 @@ class TextArea {
   void redraw() {
     lines.clear();
   }
-  
+
   Point getPointByInnerPoint(final Point p) {
     return new Point(x + p.x, y + p.y);
   }
 
+  int getLineOffset(final int row) {
+    return lines.get(row).offset;
+  }
+
+  int getLineEnd(final int row) {
+    return lines.get(row).end;
+  }
+
   // inner means relative to the text area rather than the window, display or screen
   Point getInnerPointByTextOffset(final int offset) {
+    LineRecord line;
     int row = Collections.binarySearch(lines, new LineRecord(0, offset, 0, 0, 0), new LineOffsetComparator());
     if (row < 0) {
-      row = -row - 2;
+      line = lines.get(-row - 2);
+    } else if (row > 0) {
+      line = lines.get(row - 1);
+      if (line.end != offset) {
+        line = lines.get(row);
+      }
+    } else {
+      line = lines.get(row);
     }
-    final LineRecord line = lines.get(row);
     return new Point(line.x + Math.round(textWidth(text.substring(line.offset, offset))), line.y + Math.round(fontHeight / 2.0));
   }
 
+  Point getInnerPointByTextPosition(final TextPosition tp) {
+    final LineRecord line = lines.get(tp.row);
+    return new Point(line.x + Math.round(textWidth(text.substring(line.offset, tp.offset))), line.y + Math.round(fontHeight / 2.0));
+  }
 
-  int getTextOffsetByInnerPoint(final Point p) {
+  TextPosition getTextPositionByInnerPoint(final Point p) {
     clampIntoTextArea(p);
     int row = Collections.binarySearch(lines, new LineRecord(0, 0, 0, 0, p.y), new LineYComparator());
     if (row < 0) {
@@ -93,7 +121,7 @@ class TextArea {
     int x1 = x0;
     if (p.x < x0) {
       if (offset <= line.offset) {
-        return offset;
+        return new TextPosition(offset, row);
       }
       do {
         --offset;
@@ -101,10 +129,10 @@ class TextArea {
         x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset)));
       } 
       while (p.x < x0 && offset > line.offset);
-      return abs(p.x - x0) < abs(x1 - p.x) ? offset : offset + 1;
+      return new TextPosition(abs(p.x - x0) < abs(x1 - p.x) ? offset : offset + 1, row);
     }
     if (offset >= line.end) {
-      return offset;
+      return new TextPosition(offset, row);
     }
     do {
       ++offset;
@@ -112,7 +140,7 @@ class TextArea {
       x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset)));
     } 
     while (p.x >= x0 && offset < line.end);
-    return abs(x0 - p.x) <= abs(p.x - x1) ? offset : offset - 1;
+    return new TextPosition(abs(x0 - p.x) <= abs(p.x - x1) ? offset : offset - 1, row);
   }
 
   int getSelectionStart() {

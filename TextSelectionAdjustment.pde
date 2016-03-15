@@ -32,7 +32,7 @@ void setup() {
   textArea.setSelection(200, 500);
 
   final PinchSelectingZone z = new PinchSelectingZone(0, 0, width, height, textArea);
-  z.showInnerPoints = showTouch;
+  z.showTouches = showTouch;
   SMT.add(z);
 }
 
