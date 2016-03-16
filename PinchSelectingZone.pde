@@ -58,28 +58,19 @@ static class PinchSelectingZone extends Zone {
     }
 
     final Point lip = ltr.innerPoint; // last inner point
-    final Point cip = new Point(lip.x + cp.x - lp.x, lip.y + cp.y - lp.y);
-    final TextPosition ltp = textArea.getTextPositionByInnerPoint(lip);
+    Point cip = new Point(lip.x + cp.x - lp.x, lip.y + cp.y - lp.y);
     final TextPosition otp = textArea.getTextPositionByInnerPoint(otr.innerPoint);
 
-    boolean switchRecords = false;
-
     // visual consistency
-    if (cp.y < oTouch.y && cip.y > otr.innerPoint.y) {
-      if (lip.y <= otr.innerPoint.y) {
-        cip.y = otr.innerPoint.y;
-      } else {
-        switchRecords = true;
-      }
-    } else if (cp.y > oTouch.y && cip.y < otr.innerPoint.y) {
-      if (lip.y >= otr.innerPoint.y) {
-        cip.y = otr.innerPoint.y;
-      } else {
-        switchRecords = true;
+    if (cp.y < oTouch.y && cip.y > otr.innerPoint.y && lip.y <= otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y && lip.y >= otr.innerPoint.y) {
+      cip.y = otr.innerPoint.y;
+    }
+    final TextPosition ctp = textArea.getTextPositionByInnerPoint(cip);
+    if (ctp.row == otp.row) {
+      if (cp.x < oTouch.x && cip.x > otr.innerPoint.x && lip.x <= otr.innerPoint.x || cp.x > oTouch.x && cip.x < otr.innerPoint.x && lip.x >= otr.innerPoint.x) {
+        cip.x = otr.innerPoint.x;
       }
     }
-
-    final TextPosition ctp = textArea.getTextPositionByInnerPoint(cip);
 
     // selection should not disappear
     if (ctp.offset == otp.offset) {
@@ -99,14 +90,26 @@ static class PinchSelectingZone extends Zone {
       }
     }
 
+    textArea.setSelection(ctp.offset, otp.offset);
+
+    if (ctp.row == otp.row && (cp.y < oTouch.y && cip.y > otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y || cp.x < oTouch.x && cip.x > otr.innerPoint.x || cp.x > oTouch.x && cip.x < otr.innerPoint.x) 
+      || ctp.row != otp.row && (cp.y < oTouch.y && cip.y > otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y)) {
+      cip = textArea.getInnerPointByTextPosition(ctp);
+      otr.innerPoint = textArea.getInnerPointByTextPosition(otp);
+      if (ctp.row == otp.row) {
+        if (cip.x < otr.innerPoint.x && cp.x > oTouch.x || cip.x > otr.innerPoint.x && cp.x < oTouch.x) {
+          swapPoint(cip, otr.innerPoint);
+        }
+      } else {
+        if (cip.y < otr.innerPoint.y && cp.y > oTouch.y || cip.y > otr.innerPoint.y && cp.y < oTouch.y) {
+          swapPoint(cip, otr.innerPoint);
+        }
+      }
+    }
+
     final TouchRecord ctr = ltr;
     ctr.point = cp;
     ctr.innerPoint = cip;
-    textArea.setSelection(ctp.offset, otp.offset);
-    if (switchRecords) {
-      ctr.innerPoint = otr.innerPoint;
-      otr.innerPoint = cip;
-    }
   }
 
   @Override public void touch() {

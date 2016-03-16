@@ -20,16 +20,10 @@ void setup() {
   textArea.marginTop = 5;
   textArea.marginBottom = 5;
   textArea.lineSpacing = 1.5;
-  textArea.text = "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
-    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
-    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
-    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
-    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
-    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
-    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
-    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------==================="
-    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. ---------------********************&&&&&&&&&&&&&&&&&&&-----------===================";
-  textArea.setSelection(200, 500);
+  textArea.text = "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. "
+    + "-------------------------------------------***************************************************************---------------------------------------------------------------------- "
+    + "The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. The quick brown fox jumps over the lazy dog. THE QUICK BROWN FOX JUPMS OVER THE LAZY DOG. XXXXXXXX";
+  textArea.setSelection(240, 250);
 
   final PinchSelectingZone z = new PinchSelectingZone(0, 0, width, height, textArea);
   z.showTouches = showTouch;

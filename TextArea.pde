@@ -77,6 +77,10 @@ class TextArea {
   int getLineEnd(final int row) {
     return lines.get(row).end;
   }
+  
+  int getLineMedian(final int row) {
+    return lines.get(row).y + Math.round(fontHeight / 2.0);
+  }
 
   // inner means relative to the text area rather than the window, display or screen
   Point getInnerPointByTextOffset(final int offset) {
@@ -220,7 +224,7 @@ class TextArea {
     }
 
     fill(backgroundColor);
-    rect(x, textBottom, width, height - textBottom);
+    rect(x, y + textBottom, width, height - textBottom + fontHeight);
 
     popStyle();
   }
@@ -241,12 +245,14 @@ class TextArea {
     for (int i = 0; i < textLength; ++i) {
       final char c = text.charAt(i);
       final float cWidth = textWidth(c);
-      int nextY = posY;
       if (lineStart < i && lineWidth + cWidth >= textWidth) {
         lines.add(new LineRecord(lines.size(), lineStart, i, marginLeft, posY));
         lineStart = i;
         lineWidth = cWidth;
-        nextY += lineHeight;
+        posY += lineHeight;
+        if (posY >= textBottom) {
+          break;
+        }
       } else {
         lineWidth += cWidth;
         if (c == '\n') {
@@ -254,16 +260,16 @@ class TextArea {
           lines.add(new LineRecord(lines.size(), lineStart, lineEnd, marginLeft, posY));
           lineStart = lineEnd;
           lineWidth = 0;
-          nextY += lineHeight;
+          posY += lineHeight;
+          if (posY >= textBottom) {
+            break;
+          }
         }
       }
-      if (nextY >= textBottom) {
-        if (lineStart < i) {
-          lines.add(new LineRecord(lines.size(), lineStart, i, marginLeft, posY));
-        }
-        break;
-      }
-      posY = nextY;
+    }
+    if (posY < textBottom) {
+      final LineRecord lastLine = lines.get(lines.size() - 1);
+      lines.add(new LineRecord(lines.size(), lastLine.end, textLength, marginLeft, posY));
     }
   }
 
