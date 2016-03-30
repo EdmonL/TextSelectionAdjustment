@@ -4,11 +4,11 @@ static class PinchSelectingZone extends Zone {
 
   boolean showTouches = false;
 
-  private static final class TouchRecord {
-    long id;
-    Point point;
-    Point innerPoint;
-    Color myColor;
+  private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
+    long id; // the touch point id that this inner point is associated with
+    Point point; // the touch point; used as the last history to calculate touch point movement
+    Point innerPoint; // I call as "inner pointers" the small points in demo which delimits the selection
+    Color myColor; // just for demo
 
     TouchRecord(long id, final Point point, final Point innerPoint) {
       this.id = id;
@@ -18,7 +18,7 @@ static class PinchSelectingZone extends Zone {
   }
 
   private final TextArea textArea;
-  private final HashMap<Long, TouchRecord> touches = new HashMap<Long, TouchRecord>();
+  private final HashMap<Long, TouchRecord> touches = new HashMap<Long, TouchRecord>(); // touch point id -> inner point record; bindings between the inner points and touch points
 
   PinchSelectingZone(final int x, final int y, final int width, final int height, TextArea textArea) {
     super(x, y, width, height);
@@ -62,6 +62,11 @@ static class PinchSelectingZone extends Zone {
     final TextPosition otp = textArea.getTextPositionByInnerPoint(otr.innerPoint);
 
     // visual consistency
+    // we need to stop fingers from coming across each other when the fingers are not doing so
+    // thinking about a senario where user pinch close multiple lines into one
+    // when the selection has reduced to one but user's fingers are still moving towards each other, we need to stop the selection expansion
+    // another case is we need to change the binding when multiple lines becomes one to confirm with our binding rule when,
+    // for example, the upper touch point (bound to the start of selection) becomes the right one on one line (ought to be bound to the end of selection).
     if (cp.y < oTouch.y && cip.y > otr.innerPoint.y && lip.y <= otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y && lip.y >= otr.innerPoint.y) {
       cip.y = otr.innerPoint.y;
     }
@@ -72,7 +77,7 @@ static class PinchSelectingZone extends Zone {
       }
     }
 
-    // selection should not disappear
+    // selection should not disappear; we need find as least a closest character to select
     if (ctp.offset == otp.offset) {
       final Point currentInnerPoint = textArea.getInnerPointByTextPosition(ctp);
       if (ctp.offset == textArea.getLineEnd(ctp.row)) {
@@ -92,6 +97,9 @@ static class PinchSelectingZone extends Zone {
 
     textArea.setSelection(ctp.offset, otp.offset);
 
+    // visual consistency
+    // this is when fingers come across with each other but inner points do not.
+    // swap the inner points (bindings) if necessary
     if (ctp.row == otp.row && (cp.y < oTouch.y && cip.y > otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y || cp.x < oTouch.x && cip.x > otr.innerPoint.x || cp.x > oTouch.x && cip.x < otr.innerPoint.x) 
       || ctp.row != otp.row && (cp.y < oTouch.y && cip.y > otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y)) {
       cip = textArea.getInnerPointByTextPosition(ctp);
@@ -106,7 +114,7 @@ static class PinchSelectingZone extends Zone {
         }
       }
     }
-
+    // record the points as the history for next time move
     final TouchRecord ctr = ltr;
     ctr.point = cp;
     ctr.innerPoint = cip;
@@ -116,7 +124,7 @@ static class PinchSelectingZone extends Zone {
   }
 
   @Override public void draw() {
-    if (showTouches) {
+    if (showTouches) { // for demo only
       pushStyle();
       ellipseMode(RADIUS);
       textAlign(LEFT, TOP);
@@ -136,13 +144,15 @@ static class PinchSelectingZone extends Zone {
     }
   }
 
+  // this method decides which touch point is bound to the start of the selection or the end of it
   private void bindTouches() {
     final Touch[] ts = getTouches();
+    // some criteria to decide it's the time for binding
     if (ts.length != 2 || !textArea.hasSelection()) {
       touches.clear();
       return;
     }
-    if (touches.size() == 2) {
+    if (touches.size() == 2) { // only bind when there are exactly two touch points
       for (final Touch t : ts) {
         if (!touches.containsKey(t.sessionID)) {
           touches.clear();
@@ -155,6 +165,9 @@ static class PinchSelectingZone extends Zone {
     if (!touches.isEmpty()) {
       return;
     }
+    // binding; 
+    // the general rule is if there are multiple lines, upper touch point is bound to the start of selection
+    // if there is only one line selected, left touch point is bound to the start of selection
     final int[] s = new int[2];
     final int[] r = new int[2];
     s[0] = textArea.getSelectionStart();
@@ -180,6 +193,7 @@ static class PinchSelectingZone extends Zone {
       tr[i] = new TouchRecord(ts[i].sessionID, new Point(ts[i].x, ts[i].y), textArea.getInnerPointByTextOffset(s[i]));
       touches.put(ts[i].sessionID, tr[i]);
     }
+    // for demo only
     tr[0].myColor = new Color(190, 50, 50, 200);
     tr[1].myColor = new Color(50, 50, 190, 200);
     for (int i = 0; i < 2; ++i) {

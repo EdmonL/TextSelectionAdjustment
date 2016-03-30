@@ -2,7 +2,7 @@ import java.awt.Point;
 import vialab.SMT.*;
 
 TextArea textArea;
-boolean showTouch = true;
+boolean showTouch = true; // set true to show colorful touch points for demo
 
 void setup() {
   size(400, 600, SMT.RENDERER);
