@@ -2,6 +2,8 @@ import java.awt.Color;
 
 static class PinchSelectingZone extends Zone {
 
+  int currentTrial = 0;
+  boolean firstTap = true;
   boolean showTouches = false;
 
   private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
@@ -70,6 +72,11 @@ static class PinchSelectingZone extends Zone {
     if (cp.y < oTouch.y && cip.y > otr.innerPoint.y && lip.y <= otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y && lip.y >= otr.innerPoint.y) {
       cip.y = otr.innerPoint.y;
     }
+    /*boolean z = cp.y < oTouch.y;
+    boolean a = cip.y>otr.innerPoint.y;
+    boolean b = lip.y<= otr.innerPoint.y;
+    System.out.println(z + " " + a + " " + b);
+    System.out.println(cip.y + " " + otr.innerPoint.y +" " +lip.y);*/
     final TextPosition ctp = textArea.getTextPositionByInnerPoint(cip);
     if (ctp.row == otp.row) {
       if (cp.x < oTouch.x && cip.x > otr.innerPoint.x && lip.x <= otr.innerPoint.x || cp.x > oTouch.x && cip.x < otr.innerPoint.x && lip.x >= otr.innerPoint.x) {
@@ -147,6 +154,16 @@ static class PinchSelectingZone extends Zone {
   // this method decides which touch point is bound to the start of the selection or the end of it
   private void bindTouches() {
     final Touch[] ts = getTouches();
+    if(firstTap){
+       firstTap = false;
+       final Touch[] firstTouch = getTouches();
+       TextPosition tp = textArea.getTextPositionByInnerPoint(new Point(firstTouch[0].x, firstTouch[0].y));
+       int startSel = tp.offset - 3;
+       int endSel = tp.offset+3;
+       textArea.setSelection(startSel, endSel);
+       //TODO: Start Timer
+       return;
+    }
     // some criteria to decide it's the time for binding
     if (ts.length != 2 || !textArea.hasSelection()) {
       touches.clear();

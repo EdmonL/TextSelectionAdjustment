@@ -20,14 +20,11 @@ void setup() {
   textArea.marginTop = 5;
   textArea.marginBottom = 5;
   textArea.lineSpacing = 1.0;
-  textArea.text = "********************************************************************************************************************************"
-  + "***************************************************************************************************************@@@@@@@@@@@@@@@@@"
-  + "@@@@@@@@@@@@@@@@@@@@@@@@@@@*****************************************************************************************************"
-  + "********************************************************************************************************************************"
-  + "********************************************************************************************************************************";
-  textArea.setSelection(249, 250);
+  textArea.text = Trials.trialText[0];
+  //textArea.setSelection(90, 95);
 
-  final PinchSelectingZone z = new PinchSelectingZone(0, 0, width, height, textArea);
+  //final PinchSelectingZone z = new PinchSelectingZone(0, 0, width, height, textArea);
+  final HandleSelectingZone z = new HandleSelectingZone(0, 0, width, height, textArea);
   z.showTouches = showTouch;
   SMT.add(z);
 }
