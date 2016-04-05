@@ -3,7 +3,6 @@ import java.awt.Color;
 static class PinchSelectingZone extends TextAreaTouchZone {
 
   int currentTrial = 0;
-  boolean firstTap = true;
   boolean showTouches = false;
 
   private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points

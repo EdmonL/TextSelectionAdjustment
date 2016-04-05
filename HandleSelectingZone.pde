@@ -1,8 +1,7 @@
 import java.awt.Color;
 
-static class HandleSelectingZone extends Zone {
+static class HandleSelectingZone extends TextAreaTouchZone {
   int currentTrial = 0;
-  boolean firstTap = true;
   boolean showTouches = false;
 
   private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
@@ -20,19 +19,19 @@ static class HandleSelectingZone extends Zone {
     }
   }
   
-  private final TextArea textArea;
   private final HashMap<Long, TouchRecord> touches = new HashMap<Long, TouchRecord>(); // touch point id -> inner point record; bindings between the inner points and touch points
 
-  HandleSelectingZone(final int x, final int y, final int width, final int height, TextArea textArea) {
-    super(x, y, width, height);
-    this.textArea = textArea;
+  HandleSelectingZone(final TextArea textArea) {
+    super(textArea);
   }
 
   @Override public void touchDown(final Touch touch) {
+    super.touchDown(touch);
     bindTouches();
   }
 
   @Override public void touchUp(final Touch touch) {
+    super.touchUp(touch);
     bindTouches();
   }
 
@@ -85,9 +84,6 @@ static class HandleSelectingZone extends Zone {
     ctr.innerPoint = cip;
   }
 
-  @Override public void touch() {
-  }
-
   @Override public void draw() {
     if (showTouches) { // for demo only
       pushStyle();
@@ -112,16 +108,6 @@ static class HandleSelectingZone extends Zone {
   // this method decides which touch point is bound to the start of the selection or the end of it
   private void bindTouches() {
     //Set the initial selection when the screen is first tapped.
-    if(firstTap){
-       firstTap = false;
-       final Touch[] firstTouch = getTouches();
-       TextPosition tp = textArea.getTextPositionByInnerPoint(new Point(firstTouch[0].x, firstTouch[0].y));
-       int startSel = tp.offset - 3;
-       int endSel = tp.offset+3;
-       textArea.setSelection(startSel, endSel);
-       //TODO: Start Timer
-       return;
-    }
     final Touch[] ts = getTouches();
     //When all touches are removed, check the selection against the goal
     if(ts.length == 0){
@@ -203,7 +189,6 @@ static class HandleSelectingZone extends Zone {
       
       textArea.text = Trials.trialText[currentTrial];
       textArea.setSelection(0,0);
-      firstTap = true;
       System.out.println(currentTrial);
       return true;
     }

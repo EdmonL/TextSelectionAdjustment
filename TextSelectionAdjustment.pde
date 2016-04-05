@@ -14,12 +14,10 @@ void setup() {
 
   textArea = new TextArea(0, 0, width, height, createFont("Courier", 14));
   textArea.textColor = 20;
-  textArea.backgroundColor = 255;
   textArea.marginLeft = 20;
   textArea.marginRight = 20;
   textArea.marginTop = 15;
   textArea.marginBottom = 15;
-  textArea.lineSpacing = 1.0;
   Trials.generateTrials();
   textArea.text = Trials.trialText[0];
   //textArea.setSelection(90, 95);
