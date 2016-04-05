@@ -196,12 +196,12 @@ static class HandleSelectingZone extends Zone {
   
   //Check the current selection against the goal of the trial, as set in the Trials class. Currently crashes when the goal is met. Called from the bindTouches() method.
   private boolean testGoals(){
+    System.out.println(textArea.getSelectionStart() + " " + textArea.getSelectionEnd());
     if(textArea.getSelectionStart() == Trials.trialGoals[currentTrial][0] && textArea.getSelectionEnd() == Trials.trialGoals[currentTrial][1]){
       //TODO: end timer
       currentTrial++;
       
       textArea.text = Trials.trialText[currentTrial];
-      textArea.redraw();
       textArea.setSelection(0,0);
       firstTap = true;
       System.out.println(currentTrial);
