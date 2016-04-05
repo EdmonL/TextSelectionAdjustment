@@ -79,7 +79,7 @@ class TextArea {
   int getLineEnd(final int row) {
     return lines.get(row).end;
   }
-  
+
   int getLineMedian(final int row) { // the median line of a line
     return lines.get(row).y + Math.round(fontHeight / 2.0);
   }
@@ -279,8 +279,11 @@ class TextArea {
       }
     }
     if (posY < textBottom) {
-      final LineRecord lastLine = lines.get(lines.size() - 1);
-      lines.add(new LineRecord(lines.size(), lastLine.end, textLength, marginLeft, posY));
+      int lastLineEnd = 0;
+      if (!lines.isEmpty()) {
+        lastLineEnd = lines.get(lines.size() - 1).end;
+      }
+      lines.add(new LineRecord(lines.size(), lastLineEnd, textLength, marginLeft, posY));
     }
   }
 

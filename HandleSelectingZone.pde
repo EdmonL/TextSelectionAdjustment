@@ -201,6 +201,7 @@ static class HandleSelectingZone extends Zone {
       currentTrial++;
       
       textArea.text = Trials.trialText[currentTrial];
+      textArea.redraw();
       textArea.setSelection(0,0);
       firstTap = true;
       System.out.println(currentTrial);
