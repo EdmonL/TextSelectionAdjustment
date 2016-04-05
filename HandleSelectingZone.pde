@@ -1,5 +1,3 @@
-import java.awt.Color;
-
 static class HandleSelectingZone extends TextAreaTouchZone {
   int currentTrial = 0;
   boolean showTouches = false;

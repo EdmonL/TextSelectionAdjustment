@@ -32,7 +32,7 @@ static final class LineYComparator implements Comparator<LineRecord> { // order 
   }
 }
 
-static class TextPosition {
+static final class TextPosition {
   int offset; // position in the whole text
   int row; // line no
   int toward; // indicates the relation between a point and the offset. 0 means not set, 1 means the point being to the right of the offset, and -1 means left.
@@ -47,7 +47,7 @@ static class TextPosition {
   }
 }
 
-class TextArea {
+final class TextArea {
 
   private final PFont font;
 

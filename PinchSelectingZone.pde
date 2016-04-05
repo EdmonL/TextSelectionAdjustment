@@ -1,6 +1,4 @@
-import java.awt.Color;
-
-static class PinchSelectingZone extends TextAreaTouchZone {
+static final class PinchSelectingZone extends TextAreaTouchZone {
 
   int currentTrial = 0;
   boolean showTouches = false;

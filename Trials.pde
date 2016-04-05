@@ -1,15 +1,14 @@
-import java.lang.Math;
 static class Trials {
   static void generateTrials() {
     for (int j=0; j<10; j++) {
       String t = "";
       int start, end;
-      int rand = new Double(300*java.lang.Math.random()).intValue();
+      int rand = new Double(300* Math.random()).intValue();
       start = rand;
       for (int i=0; i<rand; i++) {
         t+="*";
       }
-      rand = new Double((200)*java.lang.Math.random()+26).intValue();
+      rand = new Double((200)* Math.random()+26).intValue();
       end = start + rand;
       for (int i=0; i<rand; i++) {
         t+="@";
