@@ -20,6 +20,7 @@ void setup() {
   textArea.marginTop = 15;
   textArea.marginBottom = 15;
   textArea.lineSpacing = 1.0;
+  Trials.generateTrials();
   textArea.text = Trials.trialText[0];
   //textArea.setSelection(90, 95);
 
