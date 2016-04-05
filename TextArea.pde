@@ -34,25 +34,30 @@ static final class LineYComparator implements Comparator<LineRecord> { // order 
 
 static class TextPosition {
   int offset; // position in the whole text
-  final int row; // line no
+  int row; // line no
+  int toward; // indicates the relation between a point and the offset. 0 means not set, 1 means the point being to the right of the offset, and -1 means left.
   TextPosition(final int offset, final int row) {
     this.offset = offset;
     this.row = row;
+  }
+  TextPosition(final int offset, final int row, final int toward) {
+    this.offset = offset;
+    this.row = row;
+    this.toward = toward;
   }
 }
 
 class TextArea {
 
   private final PFont font;
-  private final int x, y, width, height; // dimensions of the text area
 
+  final int x, y, width, height; // dimensions of the text area
   String text = "";
   color textColor = 0, backgroundColor = 255;
   int marginTop = 0, marginLeft = 0, marginBottom = 0, marginRight = 0;
   float lineSpacing = 1.0;
   color selectionBackgroudColor = #3297FD, selectionFrontColor = 255;
   private int selectionStart, selectionEnd; // selectionStart is enforced to be less than selectionEnd
-
   private final ArrayList<LineRecord> lines = new ArrayList<LineRecord>(); // lines
   private int fontHeight, lineHeight, textWidth, textRight, textBottom; // text relative positions in this the area; there is no textTop as it is merely marginTop; similar for textLeft
 
@@ -70,6 +75,13 @@ class TextArea {
 
   Point getPointByInnerPoint(final Point p) { // map a point in the coordinates of this text area to the point in the coordinates of the window
     return new Point(x + p.x, y + p.y);
+  }
+  Point getInnerPointByPoint(final int x, final int y) { // map a point in the coordinates of this text area to the point in the coordinates of the window
+    return new Point(x - this.x, y - this.y);
+  }
+  
+  int getNumberOfLines() {
+    return lines.size();
   }
 
   int getLineOffset(final int row) {
@@ -128,11 +140,11 @@ class TextArea {
     // for example, if the x coordinate is at 1/3 of the line's widht, then start searching roughly from the character at 1/3 column of the text of the line
     int offset = line.offset + Math.round((float)(p.x - line.x) / lineWidth * (line.end - line.offset));
     offset = clampInt(offset, line.offset, line.end);
-    int x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset)));
+    int x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset))); // this is where offset is
     int x1 = x0;
     if (p.x < x0) { // may search backward
       if (offset <= line.offset) {
-        return new TextPosition(offset, row);
+        return new TextPosition(offset, row, 1);
       }
       do {
         --offset;
@@ -140,10 +152,13 @@ class TextArea {
         x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset)));
       } 
       while (p.x < x0 && offset > line.offset);
-      return new TextPosition(abs(p.x - x0) < abs(x1 - p.x) ? offset : offset + 1, row);
+      if (abs(p.x - x0) < abs(x1 - p.x)) {
+        return new TextPosition(offset, row, 1);
+      }
+      return new TextPosition(offset+1, row, -1);
     }
     if (offset >= line.end) {
-      return new TextPosition(offset, row);
+      return new TextPosition(offset, row, -1);
     }
     do { // or forward
       ++offset;
@@ -151,7 +166,10 @@ class TextArea {
       x0 = line.x + Math.round(textWidth(text.substring(line.offset, offset)));
     } 
     while (p.x >= x0 && offset < line.end);
-    return new TextPosition(abs(x0 - p.x) <= abs(p.x - x1) ? offset : offset - 1, row);
+    if (abs(x0 - p.x) <= abs(p.x - x1)) {
+      new TextPosition(offset, row, -1);
+    }
+    return new TextPosition(offset-1, row, 1);
   }
 
   int getSelectionStart() {
@@ -220,7 +238,7 @@ class TextArea {
             selectedText = text.substring(line.offset, line.end);
           }
         }
-        if (selectedText != null) {
+        if (selectedText != null && !selectedText.isEmpty()) {
           selectionX += x;
           final int selectionY = y + line.y;
           fill(selectionBackgroudColor);

@@ -1,6 +1,6 @@
 import java.awt.Color;
 
-static class PinchSelectingZone extends Zone {
+static class PinchSelectingZone extends TextAreaTouchZone {
 
   int currentTrial = 0;
   boolean firstTap = true;
@@ -19,19 +19,19 @@ static class PinchSelectingZone extends Zone {
     }
   }
 
-  private final TextArea textArea;
   private final HashMap<Long, TouchRecord> touches = new HashMap<Long, TouchRecord>(); // touch point id -> inner point record; bindings between the inner points and touch points
 
-  PinchSelectingZone(final int x, final int y, final int width, final int height, TextArea textArea) {
-    super(x, y, width, height);
-    this.textArea = textArea;
+  PinchSelectingZone(final TextArea textArea) {
+    super(textArea);
   }
 
   @Override public void touchDown(final Touch touch) {
+    super.touchDown(touch);
     bindTouches();
   }
 
   @Override public void touchUp(final Touch touch) {
+    super.touchUp(touch);
     bindTouches();
   }
 
@@ -72,11 +72,6 @@ static class PinchSelectingZone extends Zone {
     if (cp.y < oTouch.y && cip.y > otr.innerPoint.y && lip.y <= otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y && lip.y >= otr.innerPoint.y) {
       cip.y = otr.innerPoint.y;
     }
-    /*boolean z = cp.y < oTouch.y;
-    boolean a = cip.y>otr.innerPoint.y;
-    boolean b = lip.y<= otr.innerPoint.y;
-    System.out.println(z + " " + a + " " + b);
-    System.out.println(cip.y + " " + otr.innerPoint.y +" " +lip.y);*/
     final TextPosition ctp = textArea.getTextPositionByInnerPoint(cip);
     if (ctp.row == otp.row) {
       if (cp.x < oTouch.x && cip.x > otr.innerPoint.x && lip.x <= otr.innerPoint.x || cp.x > oTouch.x && cip.x < otr.innerPoint.x && lip.x >= otr.innerPoint.x) {
@@ -127,9 +122,6 @@ static class PinchSelectingZone extends Zone {
     ctr.innerPoint = cip;
   }
 
-  @Override public void touch() {
-  }
-
   @Override public void draw() {
     if (showTouches) { // for demo only
       pushStyle();
@@ -154,16 +146,6 @@ static class PinchSelectingZone extends Zone {
   // this method decides which touch point is bound to the start of the selection or the end of it
   private void bindTouches() {
     final Touch[] ts = getTouches();
-    if(firstTap){
-       firstTap = false;
-       final Touch[] firstTouch = getTouches();
-       TextPosition tp = textArea.getTextPositionByInnerPoint(new Point(firstTouch[0].x, firstTouch[0].y));
-       int startSel = tp.offset - 3;
-       int endSel = tp.offset+3;
-       textArea.setSelection(startSel, endSel);
-       //TODO: Start Timer
-       return;
-    }
     // some criteria to decide it's the time for binding
     if (ts.length != 2 || !textArea.hasSelection()) {
       touches.clear();

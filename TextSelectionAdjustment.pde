@@ -12,19 +12,19 @@ void setup() {
     SMT.setTouchDraw(TouchDraw.NONE);
   }
 
-  textArea = new TextArea(10, 10, width - 20, height - 20, createFont("Courier", 14));
+  textArea = new TextArea(0, 0, width, height, createFont("Courier", 14));
   textArea.textColor = 20;
   textArea.backgroundColor = 255;
-  textArea.marginLeft = 10;
-  textArea.marginRight = 10;
-  textArea.marginTop = 5;
-  textArea.marginBottom = 5;
+  textArea.marginLeft = 20;
+  textArea.marginRight = 20;
+  textArea.marginTop = 15;
+  textArea.marginBottom = 15;
   textArea.lineSpacing = 1.0;
   textArea.text = Trials.trialText[0];
   //textArea.setSelection(90, 95);
 
-  //final PinchSelectingZone z = new PinchSelectingZone(0, 0, width, height, textArea);
-  final HandleSelectingZone z = new HandleSelectingZone(0, 0, width, height, textArea);
+  final PinchSelectingZone z = new PinchSelectingZone(textArea);
+  //final HandleSelectingZone z = new HandleSelectingZone(0, 0, width, height, textArea);
   z.showTouches = showTouch;
   SMT.add(z);
 }
