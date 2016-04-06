@@ -1,11 +1,31 @@
+import java.util.LinkedList;
+import java.util.List;
+
 static class TextAreaTouchZone extends Zone {
 
   protected final TextArea textArea;
   protected boolean isTap;
+  private final List<TextSelectionListener> tsListeners = new LinkedList<TextSelectionListener>();
 
   public TextAreaTouchZone(final TextArea textArea) {
     super(textArea.x, textArea.y, textArea.width, textArea.height);
     this.textArea = textArea;
+  }
+
+  public void addTextSelectionListener(final TextSelectionListener newListener) {
+    if (newListener == null) {
+      return;
+    }
+    for (final TextSelectionListener l : tsListeners) {
+      if  (newListener.equals(l)) {
+        break;
+      }
+    }
+    tsListeners.add(newListener);
+  }
+
+  public boolean removeTextSelectionListener(final TextSelectionListener newListener) {
+    tsListeners.remove(newListener);
   }
 
   @Override public void touchDown(final Touch touch) {
@@ -24,9 +44,6 @@ static class TextAreaTouchZone extends Zone {
           onShowingSelection(textArea.getSelectionStart(), tp.row, textArea.getSelectionEnd(), tp.row);
         }
       }
-      if (textArea.hasSelection()) {
-        onSelection(textArea.getSelectionStart(), textArea.getSelectionEnd());
-      }
     }
     isTap = false;
   }
@@ -40,7 +57,7 @@ static class TextAreaTouchZone extends Zone {
   }
 
   @Override public void draw() {
-      textArea.draw();
+    textArea.draw();
   }
 
   protected void onShowingSelection(final int start, final int startRow, final int end, final int endRow) {
@@ -49,7 +66,14 @@ static class TextAreaTouchZone extends Zone {
   protected void onHidingSelection() {
   }
 
-  protected void onSelection(final int start, final int end) {
+  protected void nofitySelection(final boolean allTouchesUp) {
+    if (textArea.hasSelection()) {
+      final int selStart = textArea.getSelectionStart();
+      final int selEnd = textArea.getSelectionEnd();
+      for (final TextSelectionListener l : tsListeners) {
+        l.onTextSelection(selStart, selEnd, allTouchesUp);
+      }
+    }
   }
 }
 
