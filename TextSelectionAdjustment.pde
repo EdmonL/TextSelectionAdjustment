@@ -22,8 +22,8 @@ void setup() {
   Trials.generateTrials();
   textArea.text = Trials.trialText[0];
 
-  //final PinchSelectingZone z = new PinchSelectingZone(textArea);
-  final HandleSelectingZone z = new HandleSelectingZone(textArea);
+  final PinchSelectingZone z = new PinchSelectingZone(textArea);
+  //final HandleSelectingZone z = new HandleSelectingZone(textArea);
   //z.showTouches = showTouch;
   SMT.add(z);
 }

@@ -7,6 +7,7 @@ static class HandleSelectingZone extends TextAreaTouchZone implements TextSelect
     for (int i = 0; i < handles.length; ++i) {
       handles[i] = new HandleZone(textArea);
     }
+    textArea.addTextSelectionListener(this);
   }
 
   public void setHandleScaling(final float scaling) {
@@ -16,7 +17,10 @@ static class HandleSelectingZone extends TextAreaTouchZone implements TextSelect
   }
 
   @Override public void onTextSelection(final int start, final int end, final boolean allTouchesUp, final Object src) {
-    if (!
+    if (!allTouchesUp && (src == handles[0] || src == handles[1])) {
+      final HandleZone otherHandle = src == handles[0] ? handles[1] : handles[0];
+      otherHandle.updateOrientation();
+    }
   }
 
   protected void onShowingSelection(final int start, final int startRow, final int end, final int endRow) {

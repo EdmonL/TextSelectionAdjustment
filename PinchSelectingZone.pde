@@ -18,7 +18,7 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
 
   private final HashMap<Long, TouchRecord> touches = new HashMap<Long, TouchRecord>(); // touch point id -> inner point record; bindings between the inner points and touch points
 
-  PinchSelectingZone(final TextArea textArea) {
+  public PinchSelectingZone(final TextArea textArea) {
     super(textArea);
   }
 
@@ -30,6 +30,9 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
   @Override public void touchUp(final Touch touch) {
     bindTouches();
     super.touchUp(touch);
+    if (getNumTouches() == 0) {
+      textArea.nofitySelection(true, this);
+    }
   }
 
   @Override public void touchMoved(final Touch touch) {

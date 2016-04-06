@@ -48,7 +48,7 @@ static final class TextPosition {
 }
 
 final class TextArea {
-  
+
   public final int x, y, width, height; // dimensions of the text area
   public String text = "";
   public color textColor = 0, backgroundColor = 255;
@@ -60,8 +60,9 @@ final class TextArea {
   private int selectionStart, selectionEnd; // selectionStart is enforced to be less than selectionEnd
   private final ArrayList<LineRecord> lines = new ArrayList<LineRecord>(); // lines
   private int fontHeight, lineHeight, textWidth, textRight, textBottom; // text relative positions in this the area; there is no textTop as it is merely marginTop; similar for textLeft
+  private final List<TextSelectionListener> tsListeners = new LinkedList<TextSelectionListener>();
 
-  TextArea(final int x, final int y, final int width, final int height, final PFont font) {
+  public TextArea(final int x, final int y, final int width, final int height, final PFont font) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -69,14 +70,41 @@ final class TextArea {
     this.font = font;
   }
 
-  void redraw() {
+  public void addTextSelectionListener(final TextSelectionListener newListener) {
+    if (newListener == null) {
+      return;
+    }
+    for (final TextSelectionListener l : tsListeners) {
+      if  (newListener.equals(l)) {
+        break;
+      }
+    }
+    tsListeners.add(newListener);
+  }
+
+  public boolean removeTextSelectionListener(final TextSelectionListener newListener) {
+    return tsListeners.remove(newListener);
+  }
+
+  public void nofitySelection(final boolean allTouchesUp, final Object src) {
+    if (textArea.hasSelection()) {
+      final int selStart = textArea.getSelectionStart();
+      final int selEnd = textArea.getSelectionEnd();
+      for (final TextSelectionListener l : tsListeners) {
+        l.onTextSelection(selStart, selEnd, allTouchesUp, src);
+      }
+    }
+  }
+
+  public void redraw() {
     lines.clear();
   }
 
-  Point getPointByInnerPoint(final Point p) { // map a point in the coordinates of this text area to the point in the coordinates of the window
+  public Point getPointByInnerPoint(final Point p) { // map a point in the coordinates of this text area to the point in the coordinates of the window
     return new Point(x + p.x, y + p.y);
   }
-  Point getInnerPointByPoint(final int x, final int y) { // map a point in the coordinates of this text area to the point in the coordinates of the window
+
+  public Point getInnerPointByPoint(final int x, final int y) { // map a point in the coordinates of this text area to the point in the coordinates of the window
     return new Point(x - this.x, y - this.y);
   }
 

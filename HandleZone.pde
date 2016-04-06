@@ -77,6 +77,7 @@ static final class HandleZone extends Zone {
             row = tp.row;
             textArea.setSelection(textOffset, anotherOffset);
             updatePosition();
+            textArea.nofitySelection(false, this);
           }
         }
       }
