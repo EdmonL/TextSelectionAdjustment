@@ -1,25 +1,8 @@
 static class HandleSelectingZone extends TextAreaTouchZone {
-  int currentTrial = 0;
-  boolean showTouches = false;
 
-  private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
-    long id; // the touch point id that this inner point is associated with
-    Point point; // the touch point; used as the last history to calculate touch point movement
-    Point innerPoint; // I call as "inner pointers" the small points in demo which delimits the selection
-    Color myColor; // just for demo
-    boolean isStart;
+  private HandleZone[] handles = new HandleZone[2];
 
-    TouchRecord(long id, final Point point, final Point innerPoint, boolean start) {
-      this.id = id;
-      this.point = point;
-      this.innerPoint = innerPoint;
-      this.isStart = start;
-    }
-  }
-  
-  private final HashMap<Long, TouchRecord> touches = new HashMap<Long, TouchRecord>(); // touch point id -> inner point record; bindings between the inner points and touch points
-
-  HandleSelectingZone(final TextArea textArea) {
+  public HandleSelectingZone(final TextArea textArea) {
     super(textArea);
   }
 
@@ -56,56 +39,11 @@ static class HandleSelectingZone extends TextAreaTouchZone {
       touches.clear();
       return;
     }
-    final Point cp = new Point(touch.x, touch.y);
-    final Point lp = ltr.point;
-    if (lp.x == cp.x && lp.y == cp.y) {
-      return;
-    }
-
-    final Point lip = ltr.innerPoint; // last inner point
-    Point cip = new Point(lip.x + cp.x - lp.x, lip.y + cp.y - lp.y);
-    final TextPosition ltp = textArea.getTextPositionByInnerPoint(lip);
-    
-    
-    final TextPosition ctp = textArea.getTextPositionByInnerPoint(cip);
-    
-    //Check where the new handle position is in relation to the current textArea selection, and change the selection accordingly.
-    if(ltr.isStart && ctp.offset < textArea.getSelectionEnd()){
-      textArea.setSelection(ctp.offset, textArea.getSelectionEnd());
-    }else if(ltr.isStart && ctp.offset > textArea.getSelectionEnd()){
-      textArea.setSelection(textArea.getSelectionEnd(), ctp.offset);
-      ltr.isStart = false;
-    }else if (!ltr.isStart && ctp.offset > textArea.getSelectionStart()){
-      textArea.setSelection(textArea.getSelectionStart(), ctp.offset);
-    }else if(!ltr.isStart && ctp.offset < textArea.getSelectionStart()){
-      textArea.setSelection(ctp.offset, textArea.getSelectionStart()); 
-      ltr.isStart = true;
-    }
-
-    
-    final TouchRecord ctr = ltr;
-    ctr.point = cp;
-    ctr.innerPoint = cip;
   }
 
-  @Override public void draw() {
-    if (showTouches) { // for demo only
-      pushStyle();
-      ellipseMode(RADIUS);
-      textAlign(LEFT, TOP);
-      noStroke();
-      for (final TouchRecord r : touches.values ()) {
-        final Point center = textArea.getPointByInnerPoint(r.innerPoint);
-        final Color c = r.myColor;
-        fill(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
-        ellipse(center.x, center.y, 5, 5);
-        fill(c.getRed(), c.getGreen(), c.getBlue(), 255);
-        textSize(16);
-        text(center.x + "," + center.y, center.x + 1, center.y + 1);
-        textSize(20);
-        text(r.point.x + "," + r.point.y, r.point.x + 3, r.point.y + 3);
-      }
-      popStyle();
+  public void setHandleScaling(final float scaling) {
+    for (final HandleZone h : handles) {
+      h.setScaling(scaling);
     }
   }
 
@@ -169,20 +107,8 @@ static class HandleSelectingZone extends TextAreaTouchZone {
     if(min(distToStart, distToEnd)>20){
       touches.clear();
       return;
+
     }
-    if(distToStart<distToEnd){
-      tr[0] = new TouchRecord(ts[0].sessionID, new Point(ts[0].x, ts[0].y), textArea.getInnerPointByTextOffset(s[0]), true);
-    } else{
-      tr[0] = new TouchRecord(ts[0].sessionID, new Point(ts[0].x, ts[0].y), textArea.getInnerPointByTextOffset(s[1]), false);
-    }
-    
-    touches.put(ts[0].sessionID, tr[0]);
-    
-    // for demo only
-    tr[0].myColor = new Color(190, 50, 50, 200);
-    final Color c = tr[0].myColor;
-    ts[0].setTint(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
-    
   }
   
   //Check the current selection against the goal of the trial, as set in the Trials class. Currently crashes when the goal is met. Called from the bindTouches() method.
@@ -197,6 +123,6 @@ static class HandleSelectingZone extends TextAreaTouchZone {
       this.setFirstTap(true);
       return true;
     }
-    return false;
   }
 }
+
