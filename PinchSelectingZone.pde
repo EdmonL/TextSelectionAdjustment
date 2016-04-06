@@ -144,6 +144,9 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
   private void bindTouches() {
     final Touch[] ts = getTouches();
     // some criteria to decide it's the time for binding
+     if(ts.length == 0){
+      if(testGoals()) return;
+    }
     if (ts.length != 2 || !textArea.hasSelection()) {
       touches.clear();
       return;
@@ -196,6 +199,19 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
       final Color c = tr[i].myColor;
       ts[i].setTint(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
     }
+  }
+  private boolean testGoals(){
+    System.out.println(textArea.getSelectionStart() + " " + textArea.getSelectionEnd());
+    if(textArea.getSelectionStart() == Trials.trialGoals[currentTrial][0] && textArea.getSelectionEnd() == Trials.trialGoals[currentTrial][1]){
+      //TODO: end timer
+      currentTrial++;
+      
+      textArea.text = Trials.trialText[currentTrial];
+      textArea.setSelection(0,0);
+      this.setFirstTap(true);
+      return true;
+    }
+    return false;
   }
 }
 

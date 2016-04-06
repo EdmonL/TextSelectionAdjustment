@@ -7,7 +7,7 @@ boolean showTouch = true; // set true to show colorful touch points for demo
 
 void setup() {
   size(250, 430, SMT.RENDERER);
-  SMT.init(this, TouchSource.AUTOMATIC);
+  SMT.init(this, TouchSource.WM_TOUCH);
   SMT.setWarnUnimplemented(false);
   if (!showTouch) {
     SMT.setTouchDraw(TouchDraw.NONE);
@@ -24,7 +24,7 @@ void setup() {
   //textArea.setSelection(90, 95);
 
   final PinchSelectingZone z = new PinchSelectingZone(textArea);
-  //final HandleSelectingZone z = new HandleSelectingZone(0, 0, width, height, textArea);
+  //final HandleSelectingZone z = new HandleSelectingZone(textArea);
   z.showTouches = showTouch;
   SMT.add(z);
 }

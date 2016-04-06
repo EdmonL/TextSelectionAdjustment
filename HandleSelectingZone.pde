@@ -24,11 +24,17 @@ static class HandleSelectingZone extends TextAreaTouchZone {
   }
 
   @Override public void touchDown(final Touch touch) {
+    if(this.getNumTouches()>1){
+       return; 
+    }
     super.touchDown(touch);
     bindTouches();
   }
 
   @Override public void touchUp(final Touch touch) {
+    if(this.getNumTouches()>0){
+       return; 
+    }
     super.touchUp(touch);
     bindTouches();
   }
@@ -109,6 +115,7 @@ static class HandleSelectingZone extends TextAreaTouchZone {
     final Touch[] ts = getTouches();
     //When all touches are removed, check the selection against the goal
     if(ts.length == 0){
+      touches.clear();
       if(testGoals()) return;
     }
     if (ts.length != 1 || !textArea.hasSelection()) {
@@ -141,8 +148,8 @@ static class HandleSelectingZone extends TextAreaTouchZone {
     float distToStart, distToEnd;
     startPoint = textArea.getInnerPointByTextOffset(s[0]);
     endPoint = textArea.getInnerPointByTextOffset(s[1]);
-    distToStart = dist(ts[0].getLocalX(this), ts[0].getLocalY(this), (float)startPoint.getX()+textArea.marginLeft, (float)startPoint.getY()+textArea.marginTop); 
-    distToEnd = dist(ts[0].getLocalX(this), ts[0].getLocalY(this), (float)endPoint.getX()+textArea.marginLeft, (float)endPoint.getY()+textArea.marginTop); 
+    distToStart = dist(ts[0].getLocalX(this), ts[0].getLocalY(this), (float)startPoint.getX(), (float)startPoint.getY()); 
+    distToEnd = dist(ts[0].getLocalX(this), ts[0].getLocalY(this), (float)endPoint.getX(), (float)endPoint.getY()); 
 
     /*if (r[0] == r[1]) {
       if (ts[0].x > ts[1].x) {
@@ -187,7 +194,7 @@ static class HandleSelectingZone extends TextAreaTouchZone {
       
       textArea.text = Trials.trialText[currentTrial];
       textArea.setSelection(0,0);
-      System.out.println(currentTrial);
+      this.setFirstTap(true);
       return true;
     }
     return false;
