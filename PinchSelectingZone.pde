@@ -31,7 +31,8 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
     bindTouches();
     super.touchUp(touch);
     if (getNumTouches() == 0) {
-      textArea.nofitySelection(true, this);
+      textArea.setChanged();
+      textArea.notifyObservers(Boolean.valueOf(true));
     }
   }
 

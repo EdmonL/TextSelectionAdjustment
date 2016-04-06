@@ -47,7 +47,7 @@ static final class TextPosition {
   }
 }
 
-final class TextArea {
+final class TextArea extends Observable {
 
   public final int x, y, width, height; // dimensions of the text area
   public String text = "";
@@ -60,7 +60,6 @@ final class TextArea {
   private int selectionStart, selectionEnd; // selectionStart is enforced to be less than selectionEnd
   private final ArrayList<LineRecord> lines = new ArrayList<LineRecord>(); // lines
   private int fontHeight, lineHeight, textWidth, textRight, textBottom; // text relative positions in this the area; there is no textTop as it is merely marginTop; similar for textLeft
-  private final List<TextSelectionListener> tsListeners = new LinkedList<TextSelectionListener>();
 
   public TextArea(final int x, final int y, final int width, final int height, final PFont font) {
     this.x = x;
@@ -69,31 +68,9 @@ final class TextArea {
     this.height = height;
     this.font = font;
   }
-
-  public void addTextSelectionListener(final TextSelectionListener newListener) {
-    if (newListener == null) {
-      return;
-    }
-    for (final TextSelectionListener l : tsListeners) {
-      if  (newListener.equals(l)) {
-        break;
-      }
-    }
-    tsListeners.add(newListener);
-  }
-
-  public boolean removeTextSelectionListener(final TextSelectionListener newListener) {
-    return tsListeners.remove(newListener);
-  }
-
-  public void nofitySelection(final boolean allTouchesUp, final Object src) {
-    if (textArea.hasSelection()) {
-      final int selStart = textArea.getSelectionStart();
-      final int selEnd = textArea.getSelectionEnd();
-      for (final TextSelectionListener l : tsListeners) {
-        l.onTextSelection(selStart, selEnd, allTouchesUp, src);
-      }
-    }
+  
+  @Override public void setChanged() {
+    super.setChanged();
   }
 
   public void redraw() {
@@ -225,7 +202,10 @@ final class TextArea {
     return selectionStart < selectionEnd;
   }
 
-  void setSelection(int start, int end) { // start is enforced to be less than end
+  public void setSelection(int start, int end) { // start is enforced to be less than end
+    final boolean oldHasSelection = hasSelection();
+    final int oldSelStart = selectionStart;
+    final int oldSelEnd = selectionEnd;
     start = clampSelection(start);
     end = clampSelection(end);
     if (start == end) {
@@ -237,6 +217,11 @@ final class TextArea {
     }
     selectionStart = start;
     selectionEnd = end;
+    if (hasSelection() == oldHasSelection
+      && (!oldHasSelection || oldSelStart == selectionStart && oldSelEnd == selectionEnd)) {
+        return;
+    }
+    setChanged();
   }
 
   void draw() {

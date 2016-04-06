@@ -1,4 +1,4 @@
-static class HandleSelectingZone extends TextAreaTouchZone implements TextSelectionListener {
+static class HandleSelectingZone extends TextAreaTouchZone implements Observer {
 
   private HandleZone[] handles = new HandleZone[2];
 
@@ -7,7 +7,7 @@ static class HandleSelectingZone extends TextAreaTouchZone implements TextSelect
     for (int i = 0; i < handles.length; ++i) {
       handles[i] = new HandleZone(textArea);
     }
-    textArea.addTextSelectionListener(this);
+    textArea.addObserver(this);
   }
 
   public void setHandleScaling(final float scaling) {
@@ -16,14 +16,26 @@ static class HandleSelectingZone extends TextAreaTouchZone implements TextSelect
     }
   }
 
-  @Override public void onTextSelection(final int start, final int end, final boolean allTouchesUp, final Object src) {
-    if (!allTouchesUp && (src == handles[0] || src == handles[1])) {
-      final HandleZone otherHandle = src == handles[0] ? handles[1] : handles[0];
-      otherHandle.updateOrientation();
+  @Override public void update(final Observable o, final Object arg) {
+    if (arg == handles[0] || arg == handles[1]) {
+      final HandleZone handle = (HandleZone) arg;
+      final HandleZone otherHandle = handle == handles[0] ? handles[1] : handles[0];
+      if (handle.getNumTouches() > 0) {
+        otherHandle.updateOrientation();
+      } else if (getNumTouches() == 0 && otherHandle.getNumTouches() == 0) {
+        nofitySelection();
+      }
     }
   }
 
-  protected void onShowingSelection(final int start, final int startRow, final int end, final int endRow) {
+  @Override public void touchUp(final Touch touch) {
+    super.touchUp(touch);
+    if (getNumTouches() == 0 && handles[0].getNumTouches() == 0 && handles[1].getNumTouches() == 0) {
+      nofitySelection();
+    }
+  }
+
+  @Override protected void onShowingSelection(final int start, final int startRow, final int end, final int endRow) {
     handles[0].setPosition(start, startRow);
     handles[1].setPosition(end, endRow);
     for (final HandleZone h : handles) {
@@ -31,10 +43,15 @@ static class HandleSelectingZone extends TextAreaTouchZone implements TextSelect
     }
   }
 
-  protected void onHidingSelection() {
+  @Override protected void onHidingSelection() {
     for (final HandleZone h : handles) {
       h.removeFromParent();
     }
+  }
+
+  private void nofitySelection() {
+    textArea.setChanged();
+    textArea.notifyObservers(Boolean.valueOf(true));
   }
 }
 

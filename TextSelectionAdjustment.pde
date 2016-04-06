@@ -1,5 +1,7 @@
 import java.awt.Color;
 import java.awt.Point;
+import java.util.Observable;
+import java.util.Observer;
 import vialab.SMT.*;
 
 TextArea textArea;
@@ -22,8 +24,8 @@ void setup() {
   Trials.generateTrials();
   textArea.text = Trials.trialText[0];
 
-  final PinchSelectingZone z = new PinchSelectingZone(textArea);
-  //final HandleSelectingZone z = new HandleSelectingZone(textArea);
+  //final PinchSelectingZone z = new PinchSelectingZone(textArea);
+  final HandleSelectingZone z = new HandleSelectingZone(textArea);
   //z.showTouches = showTouch;
   SMT.add(z);
 }
