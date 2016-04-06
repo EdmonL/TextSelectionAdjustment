@@ -10,6 +10,7 @@ boolean showTouch = true; // set true to show colorful touch points for demo
 void setup() {
   size(250, 430, SMT.RENDERER);
   SMT.init(this, TouchSource.AUTOMATIC);
+//  SMT.init(this, TouchSource.WM_TOUCH);
   SMT.setWarnUnimplemented(false);
   if (!showTouch) {
     SMT.setTouchDraw(TouchDraw.NONE);
