@@ -28,11 +28,12 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
   }
 
   @Override public void touchUp(final Touch touch) {
-    super.touchUp(touch);
     bindTouches();
+    super.touchUp(touch);
   }
 
   @Override public void touchMoved(final Touch touch) {
+    super.touchMoved(touch);
     if (touches.isEmpty()) {
       return;
     }
@@ -120,6 +121,7 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
   }
 
   @Override public void draw() {
+    super.draw();
     if (showTouches) { // for demo only
       pushStyle();
       ellipseMode(RADIUS);

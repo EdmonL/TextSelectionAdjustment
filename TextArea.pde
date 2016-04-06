@@ -56,7 +56,7 @@ final class TextArea {
   color textColor = 0, backgroundColor = 255;
   int marginTop = 0, marginLeft = 0, marginBottom = 0, marginRight = 0;
   float lineSpacing = 1.0;
-  color selectionBackgroudColor = #3297FD, selectionFrontColor = 255;
+  color selectionBackgroudColor = #50A6C2, selectionFrontColor = 255;
   private int selectionStart, selectionEnd; // selectionStart is enforced to be less than selectionEnd
   private final ArrayList<LineRecord> lines = new ArrayList<LineRecord>(); // lines
   private int fontHeight, lineHeight, textWidth, textRight, textBottom; // text relative positions in this the area; there is no textTop as it is merely marginTop; similar for textLeft
@@ -79,7 +79,7 @@ final class TextArea {
   Point getInnerPointByPoint(final int x, final int y) { // map a point in the coordinates of this text area to the point in the coordinates of the window
     return new Point(x - this.x, y - this.y);
   }
-  
+
   int getNumberOfLines() {
     return lines.size();
   }
@@ -92,8 +92,12 @@ final class TextArea {
     return lines.get(row).end;
   }
 
-  int getLineMedian(final int row) { // the median line of a line
+  int getLineMedian(final int row) {
     return lines.get(row).y + Math.round(fontHeight / 2.0);
+  }
+
+  public int getLineBottom(final int row) {
+    return lines.get(row).y + fontHeight;
   }
 
   // inner means relative to the text area rather than the window, display or screen
@@ -115,8 +119,12 @@ final class TextArea {
   }
 
   Point getInnerPointByTextPosition(final TextPosition tp) {
-    final LineRecord line = lines.get(tp.row);
-    return new Point(line.x + Math.round(textWidth(text.substring(line.offset, tp.offset))), line.y + Math.round(fontHeight / 2.0));
+    return getInnerPointByTextPosition(tp.offset, tp.row);
+  }
+
+  Point getInnerPointByTextPosition(final int offset, final int row) {
+    final LineRecord line = lines.get(row);
+    return new Point(line.x + Math.round(textWidth(text.substring(line.offset, offset))), line.y + Math.round(fontHeight / 2.0));
   }
 
   TextPosition getTextPositionByInnerPoint(final Point p) {
