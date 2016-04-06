@@ -48,15 +48,15 @@ static final class TextPosition {
 }
 
 final class TextArea {
+  
+  public final int x, y, width, height; // dimensions of the text area
+  public String text = "";
+  public color textColor = 0, backgroundColor = 255;
+  public int marginTop = 0, marginLeft = 0, marginBottom = 0, marginRight = 0;
+  public float lineSpacing = 1.0;
+  public color selectionBackgroudColor = #50A6C2, selectionFrontColor = 255;
 
   private final PFont font;
-
-  final int x, y, width, height; // dimensions of the text area
-  String text = "";
-  color textColor = 0, backgroundColor = 255;
-  int marginTop = 0, marginLeft = 0, marginBottom = 0, marginRight = 0;
-  float lineSpacing = 1.0;
-  color selectionBackgroudColor = #50A6C2, selectionFrontColor = 255;
   private int selectionStart, selectionEnd; // selectionStart is enforced to be less than selectionEnd
   private final ArrayList<LineRecord> lines = new ArrayList<LineRecord>(); // lines
   private int fontHeight, lineHeight, textWidth, textRight, textBottom; // text relative positions in this the area; there is no textTop as it is merely marginTop; similar for textLeft

@@ -1,4 +1,4 @@
-static class HandleSelectingZone extends TextAreaTouchZone {
+static class HandleSelectingZone extends TextAreaTouchZone implements TextSelectionListener {
 
   private HandleZone[] handles = new HandleZone[2];
 
@@ -13,6 +13,10 @@ static class HandleSelectingZone extends TextAreaTouchZone {
     for (final HandleZone h : handles) {
       h.setScaling(scaling);
     }
+  }
+
+  @Override public void onTextSelection(final int start, final int end, final boolean allTouchesUp, final Object src) {
+    if (!
   }
 
   protected void onShowingSelection(final int start, final int startRow, final int end, final int endRow) {

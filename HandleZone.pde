@@ -30,6 +30,14 @@ static final class HandleZone extends Zone {
     updatePosition();
   }
 
+  public void updateOrientation() {
+    final boolean left = textOffset == textArea.getSelectionStart();
+    if (left != toLeft) {
+      toLeft = left;
+      scale(-1.0, 1.0);
+    }
+  }
+
   @Override public void draw() {
     pushStyle();
     noStroke();
@@ -97,14 +105,6 @@ static final class HandleZone extends Zone {
     translate(linePoint.x, linePoint.y);
     scale(scaling);
     if (!toLeft) {
-      scale(-1.0, 1.0);
-    }
-  }
-
-  private void updateOrientation() {
-    final boolean left = textOffset == textArea.getSelectionStart();
-    if (left != toLeft) {
-      toLeft = left;
       scale(-1.0, 1.0);
     }
   }

@@ -25,7 +25,7 @@ static class TextAreaTouchZone extends Zone {
   }
 
   public boolean removeTextSelectionListener(final TextSelectionListener newListener) {
-    tsListeners.remove(newListener);
+    return tsListeners.remove(newListener);
   }
 
   @Override public void touchDown(final Touch touch) {
@@ -71,7 +71,7 @@ static class TextAreaTouchZone extends Zone {
       final int selStart = textArea.getSelectionStart();
       final int selEnd = textArea.getSelectionEnd();
       for (final TextSelectionListener l : tsListeners) {
-        l.onTextSelection(selStart, selEnd, allTouchesUp);
+        l.onTextSelection(selStart, selEnd, allTouchesUp, this);
       }
     }
   }
