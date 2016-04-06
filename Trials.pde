@@ -1,4 +1,4 @@
-class Trials {
+static class Trials {
   static void generateTrials() {
     for (int j=0; j<10; j++) {
       String t = "";
