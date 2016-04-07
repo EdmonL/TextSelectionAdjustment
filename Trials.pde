@@ -33,6 +33,14 @@ static class Trials {
     return text;
   }
   
+  public int getTargetStart() {
+    return targetStart;
+  }
+  
+  public int getTargetEnd() {
+    return targetEnd;
+  }
+  
   public boolean checkTarget(final int start, final int end) {
     return start == targetStart && end == targetEnd;
   }

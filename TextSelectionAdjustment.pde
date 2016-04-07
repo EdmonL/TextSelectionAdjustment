@@ -16,10 +16,13 @@ final Trials trials = new Trials(2);
 boolean startScreen = true, endScreen = false;
 String userId = "";
 String tech;
+long timer;
+int selStart, selEnd;
 
 final PFont screenFont = createFont("Arial Black", 20, true);
 final int buttonWidth = 200;
 final int buttionHeight = 50;
+final PFont textAreaFont = createFont("Courier", 14);
 
 void setup() {
   size(320, 550, SMT.RENDERER);
@@ -52,6 +55,8 @@ void draw() {
     textAlign(CENTER, CENTER);
     text("It's completed! Thank you!", width / 2, height / 2);
     popStyle();
+  } else {
+    textFont(textAreaFont);
   }
 }
 
@@ -62,6 +67,8 @@ void keyPressed() {
     } else if (key != CODED && userId.length() < 15 && (Character.isLetterOrDigit(key) || key == '_' || key == '-')) {
       userId += key;
     }
+  } else if (endScreen) {
+    exit();
   }
 }
 
@@ -96,14 +103,18 @@ private boolean startTrial(final TextArea textArea) {
   }
   textArea.text = trials.getText();
   textArea.redraw();
+  textArea.notifyObservers(new TextSelectionEvent(0, 0, 0, 0, false, false));
   return true;
 }
 
 private void finishTrial(final TextArea textArea) {
+  timer = System.currentTimeMillis() - timer;
+  println(String.format("User %s, Tech %s, Trial No. %d, Time %d, Initial Start %d, Initial End %d, Target Start %d, Target End %d", 
+  userId, tech, trials.getTrialNo(), timer, selStart, selEnd, trials.getTargetStart(), trials.getTargetEnd()));
 }
 
 private TextArea createTextArea() {
-  final TextArea textArea = new TextArea(0, 0, width, height, createFont("Courier", 14));
+  final TextArea textArea = new TextArea(0, 0, width, height);
   textArea.textColor = 20;
   textArea.marginLeft = 22;
   textArea.marginRight = 20;
@@ -114,12 +125,17 @@ private TextArea createTextArea() {
     @Override public void update(final Observable o, final Object arg) {
       if (arg instanceof TextSelectionEvent) {
         final TextSelectionEvent event = (TextSelectionEvent) arg;
-        if (event.isInitial) { // start timeing
-        } else if (!event.hasTouches && event.hasSelection() && trials.checkTarget(event.start, event.end)) { // check goal
-          finishTrial(textArea);
-          if (!startTrial(textArea)) {
-            SMT.remove(tech);
-            endScreen = true;
+        if (event.hasSelection()) {
+          if (event.isInitial) {
+            selStart = event.start;
+            selEnd = event.end;
+            timer = System.currentTimeMillis();  // start timeing
+          } else if (!event.hasTouches&& trials.checkTarget(event.start, event.end)) { // check goal
+            finishTrial(textArea);
+            if (!startTrial(textArea)) {
+              SMT.remove(tech);
+              endScreen = true;
+            }
           }
         }
       }

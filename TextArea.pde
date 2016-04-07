@@ -52,17 +52,15 @@ final class TextArea extends Observable {
   public float lineSpacing = 1.0;
   public color selectionBackgroudColor = #50A6C2, selectionFrontColor = 255;
 
-  private final PFont font;
   private int selectionStart, selectionEnd; // selectionStart is enforced to be less than selectionEnd
   private final ArrayList<LineRecord> lines = new ArrayList<LineRecord>(); // lines
   private int fontHeight, lineHeight, textWidth, textRight, textBottom; // text relative positions in this the area; there is no textTop as it is merely marginTop; similar for textLeft
 
-  public TextArea(final int x, final int y, final int width, final int height, final PFont font) {
+  public TextArea(final int x, final int y, final int width, final int height) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.font = font;
   }
   
   @Override public void setChanged() {
@@ -71,6 +69,7 @@ final class TextArea extends Observable {
 
   public void redraw() {
     lines.clear();
+    setSelection(0, 0);
   }
 
   public Point getPointByInnerPoint(final Point p) { // map a point in the coordinates of this text area to the point in the coordinates of the window
@@ -227,7 +226,6 @@ final class TextArea extends Observable {
     rectMode(CORNER);
 
     textAlign(LEFT, TOP);
-    textFont(font);
     fill(textColor);
 
     prepareText();

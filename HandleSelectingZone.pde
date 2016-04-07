@@ -41,13 +41,6 @@ static class HandleSelectingZone extends TextAreaTouchZone implements Observer {
     }
   }
 
-  @Override public void touchUp(final Touch touch) {
-    super.touchUp(touch);
-    if (getNumTouches() == 0 && handles[0].getNumTouches() == 0 && handles[1].getNumTouches() == 0) {
-      nofitySelection();
-    }
-  }
-
   private void nofitySelection() {
     if (handles[0].textOffset != textArea.getSelectionStart()) {
       final HandleZone tmp0 = handles[0];

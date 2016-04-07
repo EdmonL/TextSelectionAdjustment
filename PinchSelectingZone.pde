@@ -1,7 +1,7 @@
 static final class PinchSelectingZone extends TextAreaTouchZone {
 
   int currentTrial = 0;
-  boolean showTouches = false;
+  boolean showTouches = true;
 
   private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
     long id; // the touch point id that this inner point is associated with
@@ -146,7 +146,7 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
       textAlign(LEFT, TOP);
       noStroke();
       for (final TouchRecord r : touches.values ()) {
-        final Point center = textArea.getPointByInnerPoint(r.innerPoint);
+        final Point center = r.innerPoint;
         final Color c = r.myColor;
         fill(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
         ellipse(center.x, center.y, 5, 5);
