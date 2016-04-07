@@ -31,8 +31,8 @@ void setup() {
   }
 
   final int buttonX = (width - buttonWidth) / 2;
-  SMT.add(new ButtonZone("handles", buttonX, height - 5 * buttionHeight, buttonWidth, buttionHeight, "HANDLES", screenFont));
-  SMT.add(new ButtonZone("pinch", buttonX, height + 20 - 4 * buttionHeight, buttonWidth, buttionHeight, "PINCH", screenFont));
+  SMT.add(new ButtonZone("handlesButton", buttonX, height - 5 * buttionHeight, buttonWidth, buttionHeight, "HANDLES", screenFont));
+  SMT.add(new ButtonZone("pinchButton", buttonX, height + 20 - 4 * buttionHeight, buttonWidth, buttionHeight, "PINCH", screenFont));
 }
 
 void draw() {
@@ -65,20 +65,29 @@ void keyPressed() {
   }
 }
 
-void pressHandles(final Zone button) {
-  if (userId.length() <= 0) {
-    return;
-  }
-  tech = button.getName();
-  SMT.add(new HandleSelectingZone(tech, prepareTrials()));
+private TextArea startTrials() {
+  startScreen = false;
+  SMT.remove("handlesButton");
+  SMT.remove("pinchButton");
+  final TextArea textArea = createTextArea();
+  startTrial(textArea);
+  return textArea;
 }
 
-void pressPinch(final Zone button) {
+void pressHandlesButton(final Zone button) {
   if (userId.length() <= 0) {
     return;
   }
-  tech = button.getName();
-  SMT.add(new HandleSelectingZone(tech, prepareTrials()));
+  tech = "handles";
+  SMT.add(new HandleSelectingZone(tech, startTrials()));
+}
+
+void pressPinchButton(final Zone button) {
+  if (userId.length() <= 0) {
+    return;
+  }
+  tech = "pinch";
+  SMT.add(new PinchSelectingZone(tech, startTrials()));
 }
 
 private boolean startTrial(final TextArea textArea) {
@@ -117,15 +126,6 @@ private TextArea createTextArea() {
     }
   }
   );
-  return textArea;
-}
-
-private TextArea prepareTrials() {
-  startScreen = false;
-  SMT.remove("handles");
-  SMT.remove("pinch");
-  final TextArea textArea = createTextArea();
-  startTrial(textArea);
   return textArea;
 }
 
