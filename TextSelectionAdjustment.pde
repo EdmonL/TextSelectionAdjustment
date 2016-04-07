@@ -73,21 +73,6 @@ void keyPressed() {
   }
 }
 
-private TextArea startTrials() {
-  startScreen = false;
-  SMT.remove("handlesButton");
-  SMT.remove("pinchButton");
-  if (userId.equals("0")) {
-    output = new PrintWriter(System.out, true);
-  } else {
-    output = createWriter(String.format("user_%s_tech_%s_date_%d-%d-%d_time_%d-%d-%d.csv", userId, tech, year(), month(), day(), hour(), minute(), second()));
-  }
-  output.println("User,Tech,Trial No.,Time (in millisecond),Initial Start,Initial End,Target Start,Target End");
-  final TextArea textArea = createTextArea();
-  startTrial(textArea);
-  return textArea;
-}
-
 void pressHandlesButton(final Zone button) {
   if (userId.length() <= 0) {
     return;
@@ -102,6 +87,21 @@ void pressPinchButton(final Zone button) {
   }
   tech = "pinch";
   SMT.add(new PinchSelectingZone(tech, startTrials()));
+}
+
+private TextArea startTrials() {
+  startScreen = false;
+  SMT.remove("handlesButton");
+  SMT.remove("pinchButton");
+  if (userId.equals("0")) {
+    output = new PrintWriter(System.out, true);
+  } else {
+    output = createWriter(String.format("user_%s_tech_%s_date_%d-%d-%d_time_%d-%d-%d.csv", userId, tech, year(), month(), day(), hour(), minute(), second()));
+  }
+  output.println("User,Tech,Trial No.,Time (in millisecond),Initial Start,Initial End,Target Start,Target End");
+  final TextArea textArea = createTextArea();
+  startTrial(textArea);
+  return textArea;
 }
 
 private boolean startTrial(final TextArea textArea) {

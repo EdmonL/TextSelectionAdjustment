@@ -1,4 +1,4 @@
-static class HandleSelectingZone extends TextAreaTouchZone implements Observer {
+static final class HandleSelectingZone extends TextAreaTouchZone implements Observer {
 
   private HandleZone[] handles = new HandleZone[2];
 

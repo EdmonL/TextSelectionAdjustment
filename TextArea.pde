@@ -1,9 +1,9 @@
-static final class LineRecord implements Comparable<LineRecord> { // we parse and draw text one line after another
-  final int number; // line number
-  final int offset, end; // positions of the line in the whole text
-  final int x, y; // drawing positions
+private static final class LineRecord implements Comparable<LineRecord> { // we parse and draw text one line after another
+  public final int number; // line number
+  public final int offset, end; // positions of the line in the whole text
+  public final int x, y; // drawing positions
 
-  LineRecord(final int number, final int offset, final int end, final int x, final int y) {
+  public LineRecord(final int number, final int offset, final int end, final int x, final int y) {
     this.number = number;
     this.offset = offset;
     this.end = end;
@@ -16,27 +16,29 @@ static final class LineRecord implements Comparable<LineRecord> { // we parse an
   }
 }
 
-static final class LineOffsetComparator implements Comparator<LineRecord> { // order lines by offset
+private static final class LineOffsetComparator implements Comparator<LineRecord> { // order lines by offset
   @Override public int compare(final LineRecord l1, final LineRecord l2) {
     return l1.offset - l2.offset;
   }
 }
 
-static final class LineYComparator implements Comparator<LineRecord> { // order lines by y
+private static final class LineYComparator implements Comparator<LineRecord> { // order lines by y
   @Override public int compare(final LineRecord l1, final LineRecord l2) {
     return l1.y - l2.y;
   }
 }
 
 static final class TextPosition {
-  int offset; // position in the whole text
-  int row; // line no
-  int toward; // indicates the relation between a point and the offset. 0 means not set, 1 means the point being to the right of the offset, and -1 means left.
-  TextPosition(final int offset, final int row) {
+  public int offset; // position in the whole text
+  public int row; // line no
+  public int toward; // indicates the relation between a point and the offset. 0 means not set, 1 means the point being to the right of the offset, and -1 means left.
+  
+  public TextPosition(final int offset, final int row) {
     this.offset = offset;
     this.row = row;
   }
-  TextPosition(final int offset, final int row, final int toward) {
+  
+  public TextPosition(final int offset, final int row, final int toward) {
     this.offset = offset;
     this.row = row;
     this.toward = toward;
@@ -80,19 +82,19 @@ final class TextArea extends Observable {
     return new Point(x - this.x, y - this.y);
   }
 
-  int getNumberOfLines() {
+  public int getNumberOfLines() {
     return lines.size();
   }
 
-  int getLineOffset(final int row) {
+  public int getLineOffset(final int row) {
     return lines.get(row).offset;
   }
 
-  int getLineEnd(final int row) {
+  public int getLineEnd(final int row) {
     return lines.get(row).end;
   }
 
-  int getLineMedian(final int row) {
+  public int getLineMedian(final int row) {
     return lines.get(row).y + Math.round(fontHeight / 2.0);
   }
 
@@ -101,7 +103,7 @@ final class TextArea extends Observable {
   }
 
   // inner means relative to the text area rather than the window, display or screen
-  Point getInnerPointByTextOffset(final int offset) {
+  public Point getInnerPointByTextOffset(final int offset) {
     LineRecord line;
     int row = Collections.binarySearch(lines, new LineRecord(0, offset, 0, 0, 0), new LineOffsetComparator());
     // see java doc for the meaning for the returned value by binarySearch
@@ -118,16 +120,16 @@ final class TextArea extends Observable {
     return new Point(line.x + Math.round(textWidth(text.substring(line.offset, offset))), line.y + Math.round(fontHeight / 2.0));
   }
 
-  Point getInnerPointByTextPosition(final TextPosition tp) {
+  public Point getInnerPointByTextPosition(final TextPosition tp) {
     return getInnerPointByTextPosition(tp.offset, tp.row);
   }
 
-  Point getInnerPointByTextPosition(final int offset, final int row) {
+  public Point getInnerPointByTextPosition(final int offset, final int row) {
     final LineRecord line = lines.get(row);
     return new Point(line.x + Math.round(textWidth(text.substring(line.offset, offset))), line.y + Math.round(fontHeight / 2.0));
   }
 
-  TextPosition getTextPositionByInnerPoint(final Point p) {
+  public TextPosition getTextPositionByInnerPoint(final Point p) {
     clampIntoTextArea(p);
     // get the target line first
     int row = Collections.binarySearch(lines, new LineRecord(0, 0, 0, 0, p.y), new LineYComparator());
@@ -180,20 +182,20 @@ final class TextArea extends Observable {
     return new TextPosition(offset-1, row, 1);
   }
 
-  int getSelectionStart() {
+  public int getSelectionStart() {
     return selectionStart;
   }
 
-  int getSelectionEnd() {
+  public int getSelectionEnd() {
     return selectionEnd;
   }
 
-  int getRowByTextOffset(final int offset) {
+  public int getRowByTextOffset(final int offset) {
     final int row = Collections.binarySearch(lines, new LineRecord(0, offset, 0, 0, 0), new LineOffsetComparator());
     return row < 0 ? -row - 2 : row;
   }
 
-  boolean hasSelection() {
+  public boolean hasSelection() {
     return selectionStart < selectionEnd;
   }
 
@@ -219,7 +221,7 @@ final class TextArea extends Observable {
     setChanged();
   }
 
-  void draw() {
+  public void draw() {
     pushStyle();
     background(backgroundColor);
     noStroke();
