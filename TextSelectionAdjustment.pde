@@ -9,20 +9,21 @@ import java.util.Observable;
 import java.util.Observer;
 import vialab.SMT.*;
 
-TextArea textArea;
-boolean showTouch = true; // set true to show colorful touch points for demo
+private TextArea textArea;
+private boolean showTouch = true; // set true to show colorful touch points for demo
 
-final Trials trials = new Trials(2);
-boolean startScreen = true, endScreen = false;
-String userId = "";
-String tech;
-long timer;
-int selStart, selEnd;
+private final Trials trials = new Trials(2);
+private boolean startScreen = true, endScreen = false;
+private String userId = "";
+private String tech;
+private long timer;
+private int selStart, selEnd;
+private PrintWriter output;
 
-final PFont screenFont = createFont("Arial Black", 20, true);
-final int buttonWidth = 200;
-final int buttionHeight = 50;
-final PFont textAreaFont = createFont("Courier", 14);
+private final PFont screenFont = createFont("Arial Black", 20, true);
+private final int buttonWidth = 200;
+private final int buttionHeight = 50;
+private final PFont textAreaFont = createFont("Courier", 14);
 
 void setup() {
   size(320, 550, SMT.RENDERER);
@@ -76,6 +77,8 @@ private TextArea startTrials() {
   startScreen = false;
   SMT.remove("handlesButton");
   SMT.remove("pinchButton");
+  output = createWriter(String.format("user_%s_tech_%s_date_%d-%d-%d_time_%d-%d-%d.csv", userId, tech, year(), month(), day(), hour(), minute(), second()));
+  output.println("User,Tech,Trial No.,Time (in millisecond),Initial Start,Initial End,Target Start,Target End");
   final TextArea textArea = createTextArea();
   startTrial(textArea);
   return textArea;
@@ -109,8 +112,7 @@ private boolean startTrial(final TextArea textArea) {
 
 private void finishTrial(final TextArea textArea) {
   timer = System.currentTimeMillis() - timer;
-  println(String.format("User %s, Tech %s, Trial No. %d, Time %d, Initial Start %d, Initial End %d, Target Start %d, Target End %d", 
-  userId, tech, trials.getTrialNo(), timer, selStart, selEnd, trials.getTargetStart(), trials.getTargetEnd()));
+  output.println(String.format("%s,%s,%d,%d,%d,%d,%d,%d", userId, tech, trials.getTrialNo(), timer, selStart, selEnd, trials.getTargetStart(), trials.getTargetEnd()));
 }
 
 private TextArea createTextArea() {
@@ -134,6 +136,9 @@ private TextArea createTextArea() {
             finishTrial(textArea);
             if (!startTrial(textArea)) {
               SMT.remove(tech);
+              output.flush();
+              output.close();
+              output = null;
               endScreen = true;
             }
           }
