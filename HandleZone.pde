@@ -30,6 +30,14 @@ static final class HandleZone extends Zone {
     updatePosition();
   }
 
+  public void updateOrientation() {
+    final boolean left = textOffset == textArea.getSelectionStart();
+    if (left != toLeft) {
+      toLeft = left;
+      scale(-1.0, 1.0);
+    }
+  }
+
   @Override public void draw() {
     pushStyle();
     noStroke();
@@ -69,6 +77,7 @@ static final class HandleZone extends Zone {
             row = tp.row;
             textArea.setSelection(textOffset, anotherOffset);
             updatePosition();
+            textArea.notifyObservers(this);
           }
         }
       }
@@ -82,29 +91,27 @@ static final class HandleZone extends Zone {
       touchOffset.y = linePoint.y - touch.y;
     }
   }
+  
+  @Override public void touch() {
+  }
 
   @Override public void touchUp(final Touch touch) {
     if (isMoving) {
       updateOrientation();
     }
     isMoving = false;
+    if (getNumTouches() == 0) {
+      textArea.setChanged();
+      textArea.notifyObservers(this);
+    }
   }
 
   private void updatePosition() {
     linePoint = textArea.getInnerPointByTextPosition(textOffset, row);
-    linePoint.y = textArea.getLineBottom(row);
     resetMatrix();
-    translate(linePoint.x, linePoint.y);
+    translate(linePoint.x, textArea.getLineBottom(row));
     scale(scaling);
     if (!toLeft) {
-      scale(-1.0, 1.0);
-    }
-  }
-
-  private void updateOrientation() {
-    final boolean left = textOffset == textArea.getSelectionStart();
-    if (left != toLeft) {
-      toLeft = left;
       scale(-1.0, 1.0);
     }
   }

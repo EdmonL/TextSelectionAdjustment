@@ -1,8 +1,4 @@
-import java.util.Collections;
-import java.util.Comparator;
-
-// we parse and draw text one line after another
-static final class LineRecord implements Comparable<LineRecord> {
+static final class LineRecord implements Comparable<LineRecord> { // we parse and draw text one line after another
   final int number; // line number
   final int offset, end; // positions of the line in the whole text
   final int x, y; // drawing positions
@@ -47,36 +43,40 @@ static final class TextPosition {
   }
 }
 
-final class TextArea {
+final class TextArea extends Observable {
 
-  private final PFont font;
+  public final int x, y, width, height; // dimensions of the text area
+  public String text = "";
+  public color textColor = 0, backgroundColor = 255;
+  public int marginTop = 0, marginLeft = 0, marginBottom = 0, marginRight = 0;
+  public float lineSpacing = 1.0;
+  public color selectionBackgroudColor = #50A6C2, selectionFrontColor = 255;
 
-  final int x, y, width, height; // dimensions of the text area
-  String text = "";
-  color textColor = 0, backgroundColor = 255;
-  int marginTop = 0, marginLeft = 0, marginBottom = 0, marginRight = 0;
-  float lineSpacing = 1.0;
-  color selectionBackgroudColor = #50A6C2, selectionFrontColor = 255;
   private int selectionStart, selectionEnd; // selectionStart is enforced to be less than selectionEnd
   private final ArrayList<LineRecord> lines = new ArrayList<LineRecord>(); // lines
   private int fontHeight, lineHeight, textWidth, textRight, textBottom; // text relative positions in this the area; there is no textTop as it is merely marginTop; similar for textLeft
 
-  TextArea(final int x, final int y, final int width, final int height, final PFont font) {
+  public TextArea(final int x, final int y, final int width, final int height) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.font = font;
+  }
+  
+  @Override public void setChanged() {
+    super.setChanged();
   }
 
-  void redraw() {
+  public void redraw() {
     lines.clear();
+    setSelection(0, 0);
   }
 
-  Point getPointByInnerPoint(final Point p) { // map a point in the coordinates of this text area to the point in the coordinates of the window
+  public Point getPointByInnerPoint(final Point p) { // map a point in the coordinates of this text area to the point in the coordinates of the window
     return new Point(x + p.x, y + p.y);
   }
-  Point getInnerPointByPoint(final int x, final int y) { // map a point in the coordinates of this text area to the point in the coordinates of the window
+
+  public Point getInnerPointByPoint(final int x, final int y) { // map a point in the coordinates of this text area to the point in the coordinates of the window
     return new Point(x - this.x, y - this.y);
   }
 
@@ -197,7 +197,10 @@ final class TextArea {
     return selectionStart < selectionEnd;
   }
 
-  void setSelection(int start, int end) { // start is enforced to be less than end
+  public void setSelection(int start, int end) { // start is enforced to be less than end
+    final boolean oldHasSelection = hasSelection();
+    final int oldSelStart = selectionStart;
+    final int oldSelEnd = selectionEnd;
     start = clampSelection(start);
     end = clampSelection(end);
     if (start == end) {
@@ -209,6 +212,11 @@ final class TextArea {
     }
     selectionStart = start;
     selectionEnd = end;
+    if (hasSelection() == oldHasSelection
+      && (!oldHasSelection || oldSelStart == selectionStart && oldSelEnd == selectionEnd)) {
+        return;
+    }
+    setChanged();
   }
 
   void draw() {
@@ -218,7 +226,6 @@ final class TextArea {
     rectMode(CORNER);
 
     textAlign(LEFT, TOP);
-    textFont(font);
     fill(textColor);
 
     prepareText();

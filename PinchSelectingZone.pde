@@ -1,7 +1,7 @@
 static final class PinchSelectingZone extends TextAreaTouchZone {
 
   int currentTrial = 0;
-  boolean showTouches = false;
+  boolean showTouches = true;
 
   private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
     long id; // the touch point id that this inner point is associated with
@@ -18,28 +18,47 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
 
   private final HashMap<Long, TouchRecord> touches = new HashMap<Long, TouchRecord>(); // touch point id -> inner point record; bindings between the inner points and touch points
 
-  PinchSelectingZone(final TextArea textArea) {
-    super(textArea);
+  public PinchSelectingZone(final String name, final TextArea textArea) {
+    super(name, textArea);
   }
 
   @Override public void touchDown(final Touch touch) {
     super.touchDown(touch);
+    if (getNumTouches() != 2) {
+      touches.clear();
+    }
     bindTouches();
   }
 
   @Override public void touchUp(final Touch touch) {
-    bindTouches();
     super.touchUp(touch);
+    if (getNumTouches() == 0) {
+      if (touches.size() == 2 && textArea.hasSelection()) {
+        final TextPosition[] tp = new TextPosition[2];
+        int i = 0;
+        for (final TouchRecord tr : touches.values()) {
+          tp[i++] = textArea.getTextPositionByInnerPoint(tr.innerPoint);
+        }
+        if (tp[0].offset != textArea.getSelectionStart()) {
+          final TextPosition tmp0 = tp[0];
+          tp[0] = tp[1];
+          tp[1] = tmp0;
+        }
+        textArea.setChanged();
+        textArea.notifyObservers(new TextSelectionEvent(tp[0].offset, tp[0].row, tp[1].offset, tp[1].row, false, false));
+      }
+      touches.clear();
+    }
+    bindTouches();
   }
 
   @Override public void touchMoved(final Touch touch) {
     super.touchMoved(touch);
-    if (touches.isEmpty()) {
+    if (touches.size() != 2) {
       return;
     }
     final Touch[] ts = getTouches();
     if (ts.length != 2) {
-      touches.clear();
       return;
     }
     // goal: update touch record and set selection
@@ -48,7 +67,6 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
     final TouchRecord ltr = touches.get(touch.sessionID);
     final TouchRecord otr = touches.get(oTouch.sessionID);
     if (ltr == null || otr == null) {
-      touches.clear();
       return;
     }
     final Point cp = new Point(touch.x, touch.y);
@@ -128,7 +146,7 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
       textAlign(LEFT, TOP);
       noStroke();
       for (final TouchRecord r : touches.values ()) {
-        final Point center = textArea.getPointByInnerPoint(r.innerPoint);
+        final Point center = r.innerPoint;
         final Color c = r.myColor;
         fill(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
         ellipse(center.x, center.y, 5, 5);
@@ -146,14 +164,10 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
   private void bindTouches() {
     final Touch[] ts = getTouches();
     // some criteria to decide it's the time for binding
-     if(ts.length == 0){
-      if(testGoals()) return;
-    }
     if (ts.length != 2 || !textArea.hasSelection()) {
-      touches.clear();
       return;
     }
-    if (touches.size() == 2) { // only bind when there are exactly two touch points
+    if (touches.size() == 2) {
       for (final Touch t : ts) {
         if (!touches.containsKey(t.sessionID)) {
           touches.clear();
@@ -201,19 +215,6 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
       final Color c = tr[i].myColor;
       ts[i].setTint(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
     }
-  }
-  private boolean testGoals(){
-    System.out.println(textArea.getSelectionStart() + " " + textArea.getSelectionEnd());
-    if(textArea.getSelectionStart() == Trials.trialGoals[currentTrial][0] && textArea.getSelectionEnd() == Trials.trialGoals[currentTrial][1]){
-      //TODO: end timer
-      currentTrial++;
-      
-      textArea.text = Trials.trialText[currentTrial];
-      textArea.setSelection(0,0);
-      this.setFirstTap(true);
-      return true;
-    }
-    return false;
   }
 }
 
