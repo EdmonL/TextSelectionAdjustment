@@ -12,7 +12,7 @@ import vialab.SMT.*;
 private TextArea textArea;
 private boolean showTouch = true; // set true to show colorful touch points for demo
 
-private final Trials trials = new Trials(2);
+private final Trials trials = new Trials(30);
 private boolean startScreen = true, endScreen = false;
 private String userId = "";
 private String tech;
@@ -120,12 +120,12 @@ private void finishTrial(final TextArea textArea) {
 }
 
 private TextArea createTextArea() {
-  final TextArea textArea = new TextArea(0, 0, width, height);
-  textArea.textColor = 20;
-  textArea.marginLeft = 22;
-  textArea.marginRight = 20;
-  textArea.marginTop = 15;
-  textArea.marginBottom = 35;
+  final TextArea textArea = new TextArea(17, 10, width - 30, height - 35);
+  textArea.textColor = 0;
+  textArea.marginLeft = 5;
+  textArea.marginRight = 5;
+  textArea.marginTop = 5;
+  textArea.marginBottom = 15;
   textArea.lineSpacing = 1.1;
   textArea.addObserver(new Observer() {
     @Override public void update(final Observable o, final Object arg) {

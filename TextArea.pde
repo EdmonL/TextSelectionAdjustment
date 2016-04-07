@@ -74,10 +74,6 @@ final class TextArea extends Observable {
     setSelection(0, 0);
   }
 
-  public Point getPointByInnerPoint(final Point p) { // map a point in the coordinates of this text area to the point in the coordinates of the window
-    return new Point(x + p.x, y + p.y);
-  }
-
   public Point getInnerPointByPoint(final int x, final int y) { // map a point in the coordinates of this text area to the point in the coordinates of the window
     return new Point(x - this.x, y - this.y);
   }
@@ -236,7 +232,7 @@ final class TextArea extends Observable {
     // the way of drawing selection is to draw background (rectangles) first then the fonts with the seleciton color
     for (final LineRecord line : lines) {
       final String lineText = text.substring(line.offset, line.end);
-      text(lineText, x + line.x, y + line.y);
+      text(lineText, line.x, line.y);
       if (selectionStart < selectionEnd && selectionStart < line.end && selectionEnd > line.offset) {
         String selectedText = null;
         int selectionX;
@@ -256,12 +252,10 @@ final class TextArea extends Observable {
           }
         }
         if (selectedText != null && !selectedText.isEmpty()) {
-          selectionX += x;
-          final int selectionY = y + line.y;
           fill(selectionBackgroudColor);
-          rect(selectionX, selectionY, textWidth(selectedText), fontHeight);
+          rect(selectionX, line.y, textWidth(selectedText), fontHeight);
           fill(selectionFrontColor);
-          text(selectedText, selectionX, selectionY);
+          text(selectedText, selectionX, line.y);
           fill(textColor);
         }
       }
@@ -269,7 +263,7 @@ final class TextArea extends Observable {
 
     // draw the bottom margin
     fill(backgroundColor);
-    rect(x, y + textBottom, width, height - textBottom + fontHeight);
+    rect(0, textBottom, width, height - textBottom + fontHeight);
 
     popStyle();
   }

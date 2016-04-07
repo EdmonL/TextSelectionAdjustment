@@ -43,17 +43,17 @@ static final class HandleZone extends Zone {
     noStroke();
     fill(0, 90);
     if (toLeft) {
-      quad(SHADE_WIDTH, SHADE_WIDTH, SHADE_WIDTH, HEIGHT + SHADE_WIDTH, -WIDTH + SHADE_WIDTH, HEIGHT + SHADE_WIDTH, -WIDTH + SHADE_WIDTH, HEIGHT/2 + SHADE_WIDTH);
+      quad(-SHADE_WIDTH, SHADE_WIDTH, -SHADE_WIDTH, HEIGHT + SHADE_WIDTH, WIDTH - SHADE_WIDTH, HEIGHT + SHADE_WIDTH, WIDTH - SHADE_WIDTH, HEIGHT/2 + SHADE_WIDTH);
     } else {
-      quad(-SHADE_WIDTH, SHADE_WIDTH, -SHADE_WIDTH, HEIGHT + SHADE_WIDTH, -WIDTH - SHADE_WIDTH, HEIGHT + SHADE_WIDTH, -WIDTH - SHADE_WIDTH, HEIGHT/2 + SHADE_WIDTH);
+      quad(SHADE_WIDTH, SHADE_WIDTH, SHADE_WIDTH, HEIGHT + SHADE_WIDTH, WIDTH + SHADE_WIDTH, HEIGHT + SHADE_WIDTH, WIDTH + SHADE_WIDTH, HEIGHT/2 + SHADE_WIDTH);
     }
     popStyle();
     pickDraw();
     pushStyle();
     stroke(255, 90);
     strokeWeight(SHADE_WIDTH);
-    line(0, 0, -WIDTH, HEIGHT / 2);
-    line(-WIDTH, HEIGHT, -WIDTH, HEIGHT / 2);
+    line(0, 0, WIDTH, HEIGHT / 2);
+    line(WIDTH, HEIGHT, WIDTH, HEIGHT / 2);
     popStyle();
   }
 
@@ -61,7 +61,7 @@ static final class HandleZone extends Zone {
     pushStyle();
     noStroke();
     fill(myColor.getRed(), myColor.getGreen(), myColor.getBlue(), myColor.getAlpha());
-    quad(0, 0, 0, HEIGHT, -WIDTH, HEIGHT, -WIDTH, HEIGHT / 2);
+    quad(0, 0, 0, HEIGHT, WIDTH, HEIGHT, WIDTH, HEIGHT / 2);
     popStyle();
   }
 
@@ -108,7 +108,7 @@ static final class HandleZone extends Zone {
     resetMatrix();
     translate(linePoint.x, textArea.getLineBottom(row));
     scale(scaling);
-    if (!toLeft) {
+    if (toLeft) {
       scale(-1.0, 1.0);
     }
   }

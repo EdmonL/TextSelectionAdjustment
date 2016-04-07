@@ -1,13 +1,9 @@
 static final class PinchSelectingZone extends TextAreaTouchZone {
 
-  int currentTrial = 0;
-  boolean showTouches = true;
-
   private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
     long id; // the touch point id that this inner point is associated with
     Point point; // the touch point; used as the last history to calculate touch point movement
     Point innerPoint; // I call as "inner pointers" the small points in demo which delimits the selection
-    Color myColor; // just for demo
 
     TouchRecord(long id, final Point point, final Point innerPoint) {
       this.id = id;
@@ -138,28 +134,6 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
     ctr.innerPoint = cip;
   }
 
-  @Override public void draw() {
-    super.draw();
-    if (showTouches) { // for demo only
-      pushStyle();
-      ellipseMode(RADIUS);
-      textAlign(LEFT, TOP);
-      noStroke();
-      for (final TouchRecord r : touches.values ()) {
-        final Point center = r.innerPoint;
-        final Color c = r.myColor;
-        fill(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
-        ellipse(center.x, center.y, 5, 5);
-        fill(c.getRed(), c.getGreen(), c.getBlue(), 255);
-        textSize(16);
-        text(center.x + "," + center.y, center.x + 1, center.y + 1);
-        textSize(20);
-        text(r.point.x + "," + r.point.y, r.point.x + 3, r.point.y + 3);
-      }
-      popStyle();
-    }
-  }
-
   // this method decides which touch point is bound to the start of the selection or the end of it
   private void bindTouches() {
     final Touch[] ts = getTouches();
@@ -207,13 +181,6 @@ static final class PinchSelectingZone extends TextAreaTouchZone {
     for (int i = 0; i < 2; ++i) {
       tr[i] = new TouchRecord(ts[i].sessionID, new Point(ts[i].x, ts[i].y), textArea.getInnerPointByTextOffset(s[i]));
       touches.put(ts[i].sessionID, tr[i]);
-    }
-    // for demo only
-    tr[0].myColor = new Color(190, 50, 50, 200);
-    tr[1].myColor = new Color(50, 50, 190, 200);
-    for (int i = 0; i < 2; ++i) {
-      final Color c = tr[i].myColor;
-      ts[i].setTint(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
     }
   }
 }
