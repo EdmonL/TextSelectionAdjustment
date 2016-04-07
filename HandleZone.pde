@@ -67,18 +67,15 @@ static final class HandleZone extends Zone {
 
   @Override public void touchMoved(final Touch touch) {
     if (isMoving) {
-      final Point lp = touch.getLastPoint();
-      if (lp != null && (lp.x != touch.x || lp.y != touch.y)) {
-        final TextPosition tp = textArea.getTextPositionByInnerPoint(new Point(touch.x + touchOffset.x, touch.y + touchOffset.y));
-        if (textOffset != tp.offset || row != tp.row) {
-          final int anotherOffset = textArea.getSelectionStart() == textOffset ? textArea.getSelectionEnd() : textArea.getSelectionStart();
-          if (anotherOffset != tp.offset) {
-            textOffset = tp.offset;
-            row = tp.row;
-            textArea.setSelection(textOffset, anotherOffset);
-            updatePosition();
-            textArea.notifyObservers(this);
-          }
+      final TextPosition tp = textArea.getTextPositionByInnerPoint(new Point(touch.x + touchOffset.x, touch.y + touchOffset.y));
+      if (textOffset != tp.offset || row != tp.row) {
+        final int anotherOffset = textArea.getSelectionStart() == textOffset ? textArea.getSelectionEnd() : textArea.getSelectionStart();
+        if (anotherOffset != tp.offset) {
+          textOffset = tp.offset;
+          row = tp.row;
+          textArea.setSelection(textOffset, anotherOffset);
+          updatePosition();
+          textArea.notifyObservers(this);
         }
       }
     }
@@ -91,7 +88,7 @@ static final class HandleZone extends Zone {
       touchOffset.y = linePoint.y - touch.y;
     }
   }
-  
+
   @Override public void touch() {
   }
 
