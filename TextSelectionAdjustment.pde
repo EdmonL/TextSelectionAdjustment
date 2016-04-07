@@ -10,7 +10,7 @@ import java.util.Observer;
 import vialab.SMT.*;
 
 private TextArea textArea;
-private boolean showTouch = true; // set true to show colorful touch points for demo
+private boolean showTouch = false; // set true to show touch points
 
 private final Trials trials = new Trials(30);
 private boolean startScreen = true, endScreen = false;
