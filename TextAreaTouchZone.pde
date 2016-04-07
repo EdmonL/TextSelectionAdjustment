@@ -1,13 +1,10 @@
-import java.util.LinkedList;
-import java.util.List;
-
 static class TextAreaTouchZone extends Zone {
 
   protected final TextArea textArea;
   protected boolean isTap;
 
-  public TextAreaTouchZone(final TextArea textArea) {
-    super(textArea.x, textArea.y, textArea.width, textArea.height);
+  public TextAreaTouchZone(final String name, final TextArea textArea) {
+    super(name, textArea.x, textArea.y, textArea.width, textArea.height);
     this.textArea = textArea;
   }
 
@@ -20,11 +17,11 @@ static class TextAreaTouchZone extends Zone {
       if (isTap) {
         if (textArea.hasSelection()) {
           textArea.setSelection(0, 0);
-          onHidingSelection();
+          textArea.notifyObservers(new TextSelectionEvent(0, 0, 0, 0, false, false));
         } else {
           final TextPosition tp = textArea.getTextPositionByInnerPoint(textArea.getInnerPointByPoint(touch.x, touch.y));
           textArea.setSelection(tp.offset, tp.offset + tp.toward);
-          onShowingSelection(textArea.getSelectionStart(), tp.row, textArea.getSelectionEnd(), tp.row);
+          textArea.notifyObservers(new TextSelectionEvent(textArea.getSelectionStart(), tp.row, textArea.getSelectionEnd(), tp.row, true, false));
         }
       }
     }
@@ -41,12 +38,6 @@ static class TextAreaTouchZone extends Zone {
 
   @Override public void draw() {
     textArea.draw();
-  }
-
-  protected void onShowingSelection(final int start, final int startRow, final int end, final int endRow) {
-  }
-
-  protected void onHidingSelection() {
   }
 }
 

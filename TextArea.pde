@@ -1,8 +1,4 @@
-import java.util.Collections;
-import java.util.Comparator;
-
-// we parse and draw text one line after another
-static final class LineRecord implements Comparable<LineRecord> {
+static final class LineRecord implements Comparable<LineRecord> { // we parse and draw text one line after another
   final int number; // line number
   final int offset, end; // positions of the line in the whole text
   final int x, y; // drawing positions
