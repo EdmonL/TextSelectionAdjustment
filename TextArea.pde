@@ -32,12 +32,12 @@ static final class TextPosition {
   public int offset; // position in the whole text
   public int row; // line no
   public int toward; // indicates the relation between a point and the offset. 0 means not set, 1 means the point being to the right of the offset, and -1 means left.
-  
+
   public TextPosition(final int offset, final int row) {
     this.offset = offset;
     this.row = row;
   }
-  
+
   public TextPosition(final int offset, final int row, final int toward) {
     this.offset = offset;
     this.row = row;
@@ -64,7 +64,7 @@ final class TextArea extends Observable {
     this.width = width;
     this.height = height;
   }
-  
+
   @Override public void setChanged() {
     super.setChanged();
   }
@@ -212,7 +212,7 @@ final class TextArea extends Observable {
     selectionEnd = end;
     if (hasSelection() == oldHasSelection
       && (!oldHasSelection || oldSelStart == selectionStart && oldSelEnd == selectionEnd)) {
-        return;
+      return;
     }
     setChanged();
   }
