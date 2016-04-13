@@ -11,7 +11,7 @@ static final class HandleZone extends Zone {
   private boolean isMoving;
   private float scaling = 1.0;
   private Point linePoint = new Point(0, 0);
-  private final Point touchOffset = new Point(0, 0);
+  private final Point touchOffset = new Point();
   private Color myColor = new Color(0x40, 0x96, 0xb2, 240);
 
   public HandleZone(final TextArea textArea) {
