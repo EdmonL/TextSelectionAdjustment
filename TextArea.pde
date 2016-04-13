@@ -219,9 +219,10 @@ final class TextArea extends Observable {
 
   public void draw() {
     pushStyle();
-    background(backgroundColor);
     noStroke();
     rectMode(CORNER);
+    fill(backgroundColor);
+    rect(0, 0, width, height);
 
     textAlign(LEFT, TOP);
     fill(textColor);
@@ -263,7 +264,7 @@ final class TextArea extends Observable {
 
     // draw the bottom margin
     fill(backgroundColor);
-    rect(0, textBottom, width, height - textBottom + fontHeight);
+    rect(0, textBottom, width, height - textBottom);
 
     popStyle();
   }

@@ -28,7 +28,7 @@ private final PFont textAreaFont = createFont("Courier", 14);
 void setup() {
   size(320, 550, SMT.RENDERER);
   SMT.init(this, TouchSource.AUTOMATIC);
-//  SMT.init(this, TouchSource.WM_TOUCH);
+  //  SMT.init(this, TouchSource.WM_TOUCH);
   SMT.setWarnUnimplemented(false);
   if (!showTouch) {
     SMT.setTouchDraw(TouchDraw.NONE);
@@ -73,27 +73,42 @@ void keyPressed() {
   }
 }
 
-void pressHandlesButton(final Zone button) {
-  if (userId.length() <= 0) {
-    return;
-  }
-  tech = "handles";
-  SMT.add(new HandleSelectingZone(tech, startTrials()));
+void touchHandlesButton() {
 }
 
-void pressPinchButton(final Zone button) {
-  if (userId.length() <= 0) {
-    return;
+void touchPinchButton() {
+}
+
+void touchBanner() {
+}
+
+void drawBanner() {
+  if (userId.isEmpty()) {
+    pushStyle();
+    fill(#ff0000);
+    textAlign(LEFT, TOP);
+    text("PRACTICING", 0, 0);
+    popStyle();
   }
+}
+
+void pressHandlesButton() {
+  tech = "handles";
+  SMT.add(new HandleSelectingZone(tech, startTrials()));
+  SMT.add(new Zone("banner", 0, 0, 0, 0));
+}
+
+void pressPinchButton() {
   tech = "pinch";
   SMT.add(new PinchSelectingZone(tech, startTrials()));
+  SMT.add(new Zone("banner", 0, 0, 0, 0));
 }
 
 private TextArea startTrials() {
   startScreen = false;
   SMT.remove("handlesButton");
   SMT.remove("pinchButton");
-  if (userId.equals("0")) {
+  if (userId.isEmpty()) {
     output = new PrintWriter(System.out, true);
   } else {
     output = createWriter(String.format("user_%s_tech_%s_date_%d-%d-%d_time_%d-%d-%d.csv", userId, tech, year(), month(), day(), hour(), minute(), second()));
@@ -120,12 +135,12 @@ private void finishTrial(final TextArea textArea) {
 }
 
 private TextArea createTextArea() {
-  final TextArea textArea = new TextArea(17, 10, width - 30, height - 35);
+  final TextArea textArea = new TextArea(17, 10, width - 30, height - 30);
   textArea.textColor = 0;
   textArea.marginLeft = 5;
   textArea.marginRight = 5;
   textArea.marginTop = 5;
-  textArea.marginBottom = 15;
+  textArea.marginBottom = 10;
   textArea.lineSpacing = 1.1;
   textArea.addObserver(new Observer() {
     @Override public void update(final Observable o, final Object arg) {
