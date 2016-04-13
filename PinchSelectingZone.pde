@@ -1,9 +1,9 @@
 static final class PinchSelectingZone extends TextAreaTouchZone {
 
   private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
-    long id; // the touch point id that this inner point is associated with
-    Point point; // the touch point; used as the last history to calculate touch point movement
-    Point innerPoint; // I call as "inner pointers" the small points in demo which delimits the selection
+    public final long id; // the touch point id that this inner point is associated with
+    public Point point; // the touch point; used as the last history to calculate touch point movement
+    public Point innerPoint; // I call as "inner pointers" the small points in demo which delimits the selection
 
     TouchRecord(long id, final Point point, final Point innerPoint) {
       this.id = id;

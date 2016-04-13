@@ -25,6 +25,9 @@ private final int buttonWidth = 200;
 private final int buttionHeight = 50;
 private final PFont textAreaFont = createFont("Courier", 14);
 
+private Zone banner;
+
+
 void setup() {
   size(320, 550, SMT.RENDERER);
   SMT.init(this, TouchSource.AUTOMATIC);
@@ -33,6 +36,7 @@ void setup() {
   if (!showTouch) {
     SMT.setTouchDraw(TouchDraw.NONE);
   }
+  banner = new Zone("banner", -1, -1, 0, 0);
 
   final int buttonX = (width - buttonWidth) / 2;
   SMT.add(new ButtonZone("handlesButton", buttonX, height - 5 * buttionHeight, buttonWidth, buttionHeight, "HANDLES", screenFont));
@@ -83,25 +87,28 @@ void touchBanner() {
 }
 
 void drawBanner() {
-  if (userId.isEmpty()) {
-    pushStyle();
-    fill(#ff0000);
-    textAlign(LEFT, TOP);
-    text("PRACTICING", 0, 0);
-    popStyle();
-  }
+  pushStyle();
+  fill(#ff0000);
+  textSize(12);
+  textAlign(LEFT, TOP);
+  text("PRACTICING", 1, 0);
+  popStyle();
 }
 
 void pressHandlesButton() {
   tech = "handles";
   SMT.add(new HandleSelectingZone(tech, startTrials()));
-  SMT.add(new Zone("banner", 0, 0, 0, 0));
+  if (userId.isEmpty()) {
+    SMT.add(banner);
+  }
 }
 
 void pressPinchButton() {
   tech = "pinch";
   SMT.add(new PinchSelectingZone(tech, startTrials()));
-  SMT.add(new Zone("banner", 0, 0, 0, 0));
+  if (userId.isEmpty()) {
+    SMT.add(banner);
+  }
 }
 
 private TextArea startTrials() {
