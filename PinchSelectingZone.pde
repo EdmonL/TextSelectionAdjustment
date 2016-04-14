@@ -163,16 +163,19 @@ static final class PinchSelectingZone extends TextAreaTouchZone implements Obser
         }
       }
       if (otherTextOffset != tp.offset) {
-        textArea.setSelection(tp.offset, otherTextOffset);
-        if (row == selStartRow) {
-          selStartRow = tp.row;
-        } else {
-          selEndRow = tp.row;
-        }
-        if (selStartRow > selEndRow) {
-          final int tmpStart = selStartRow;
-          selStartRow = selEndRow;
-          selEndRow = tmpStart;
+        if (tp.row == otherRow && (row != otherRow || tp.offset <= otherTextOffset && touch.x <= otherTouchPoint.x || tp.offset >= otherTextOffset && touch.x >= otherTouchPoint.x)
+          || tp.row < otherRow && touch.y <= otherTouchPoint.y || tp.row > otherRow && touch.y >= otherTouchPoint.y) {
+          textArea.setSelection(tp.offset, otherTextOffset);
+          if (row == selStartRow) {
+            selStartRow = tp.row;
+          } else {
+            selEndRow = tp.row;
+          }
+          if (selStartRow > selEndRow) {
+            final int tmpStart = selStartRow;
+            selStartRow = selEndRow;
+            selEndRow = tmpStart;
+          }
         }
         touchPoint.setLocation(touch.x, touch.y); // reset touch point so that trivial offsets are ignored intead of being accumulated.
       }
