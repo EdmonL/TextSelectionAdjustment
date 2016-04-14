@@ -84,8 +84,7 @@ static final class HandleZone extends Zone {
   @Override public void touchDown(final Touch touch) {
     isMoving = getNumTouches() == 1;
     if (isMoving) {
-      touchOffset.x = linePoint.x - touch.x;
-      touchOffset.y = linePoint.y - touch.y;
+      touchOffset.setLocation(linePoint.x - touch.x, linePoint.y - touch.y);
     }
   }
 

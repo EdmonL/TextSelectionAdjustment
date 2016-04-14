@@ -5,12 +5,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import vialab.SMT.*;
 
 private TextArea textArea;
-private boolean showTouch = false; // set true to show touch points
+private boolean showTouch = true; // set true to show touch points
 
 private final Trials trials = new Trials(30);
 private boolean startScreen = true, endScreen = false;
@@ -138,7 +139,7 @@ private boolean startTrial(final TextArea textArea) {
 
 private void finishTrial(final TextArea textArea) {
   timer = System.currentTimeMillis() - timer;
-  output.println(String.format("%s,%s,%d,%d,%d,%d,%d,%d", userId, tech, trials.getTrialNo(), timer, selStart, selEnd, trials.getTargetStart(), trials.getTargetEnd()));
+  output.println(String.format("%s,%s,%d,%d,%d,%d,%d,%d", userId.isEmpty() ? "PRACTICING" : userId, tech, trials.getTrialNo(), timer, selStart, selEnd, trials.getTargetStart(), trials.getTargetEnd()));
 }
 
 private TextArea createTextArea() {

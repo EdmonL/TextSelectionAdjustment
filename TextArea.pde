@@ -64,6 +64,10 @@ final class TextArea extends Observable {
     this.width = width;
     this.height = height;
   }
+  
+  public int getFontHeight() {
+    return fontHeight;
+  }
 
   @Override public void setChanged() {
     super.setChanged();
@@ -92,6 +96,10 @@ final class TextArea extends Observable {
 
   public int getLineMedian(final int row) {
     return lines.get(row).y + Math.round(fontHeight / 2.0);
+  }
+  
+  public int getLineTop(final int row) {
+    return lines.get(row).y;
   }
 
   public int getLineBottom(final int row) {
@@ -319,8 +327,7 @@ final class TextArea extends Observable {
 
   // do not let the point go outside the textarea
   private void clampIntoTextArea(final Point p) {
-    p.x = clampInt(p.x, marginLeft, textRight);
-    p.y = clampInt(p.y, marginTop, textBottom);
+    p.setLocation(clampInt(p.x, marginLeft, textRight), clampInt(p.y, marginTop, textBottom));
   }
 
   private int clampSelection(final int pos) {
