@@ -11,7 +11,7 @@ import java.util.Observer;
 import vialab.SMT.*;
 
 private TextArea textArea;
-private boolean showTouch = true; // set true to show touch points
+private boolean showTouch = false; // set true to show touch points
 
 private final Trials trials = new Trials(30);
 private boolean startScreen = true, endScreen = false;
@@ -105,7 +105,7 @@ void pressHandlesButton() {
 }
 
 void pressPinchButton() {
-  tech = "pinch";
+  tech = "newpinch";
   SMT.add(new PinchSelectingZone(tech, startTrials()));
   if (userId.isEmpty()) {
     SMT.add(banner);
