@@ -81,6 +81,10 @@ final class TextArea extends Observable {
   public Point getInnerPointByPoint(final int x, final int y) { // map a point in the coordinates of this text area to the point in the coordinates of the window
     return new Point(x - this.x, y - this.y);
   }
+  
+  public Point getPointByInnerPoint(final Point p) {
+    return new Point(p.x + x, p.y + y);
+  }
 
   public int getNumberOfLines() {
     return lines.size();
