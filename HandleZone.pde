@@ -10,7 +10,6 @@ static final class HandleZone extends Zone {
   private boolean toLeft;
   private boolean isMoving;
   private float scaling = 1.0;
-  private Point linePoint = new Point(0, 0);
   private final Point touchOffset = new Point();
   private Color myColor = new Color(0x40, 0x96, 0xb2, 240);
 
@@ -84,8 +83,8 @@ static final class HandleZone extends Zone {
   @Override public void touchDown(final Touch touch) {
     isMoving = getNumTouches() == 1;
     if (isMoving) {
-      touchOffset.x = linePoint.x - touch.x;
-      touchOffset.y = linePoint.y - touch.y;
+      final Point p = textArea.getInnerPointByTextPosition(textOffset, row);
+      touchOffset.setLocation(p.x - touch.x, p.y - touch.y);
     }
   }
 
@@ -104,9 +103,9 @@ static final class HandleZone extends Zone {
   }
 
   private void updatePosition() {
-    linePoint = textArea.getInnerPointByTextPosition(textOffset, row);
+    final Point p = textArea.getInnerPointByTextPosition(textOffset, row);
     resetMatrix();
-    translate(linePoint.x, textArea.getLineBottom(row));
+    translate(p.x, textArea.getLineBottom(row));
     scale(scaling);
     if (toLeft) {
       scale(-1.0, 1.0);
