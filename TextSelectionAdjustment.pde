@@ -13,7 +13,7 @@ import vialab.SMT.*;
 private TextArea textArea;
 private boolean showTouch = false; // set true to show touch points
 
-private final Trials trials = new Trials(30);
+private final Trials trials = new Trials(20);
 private boolean startScreen = true, endScreen = false;
 private String userId = "";
 private String tech;
@@ -21,13 +21,12 @@ private long timer;
 private int selStart, selEnd;
 private PrintWriter output;
 
-private final PFont screenFont = createFont("Arial Black", 20, true);
+private final PFont screenFont = createFont("Arial Black", 14, true);
 private final int buttonWidth = 200;
 private final int buttionHeight = 50;
 private final PFont textAreaFont = createFont("Courier", 11);
 
 private Zone banner;
-
 
 void setup() {
   size(220, 405, SMT.RENDERER);
@@ -148,7 +147,7 @@ private TextArea createTextArea() {
   textArea.marginLeft = 5;
   textArea.marginRight = 5;
   textArea.marginTop = 5;
-  textArea.marginBottom = 10;
+  textArea.marginBottom = 5;
   textArea.lineSpacing = 1.1;
   textArea.addObserver(new Observer() {
     @Override public void update(final Observable o, final Object arg) {
@@ -159,9 +158,10 @@ private TextArea createTextArea() {
             selStart = event.start;
             selEnd = event.end;
             timer = System.currentTimeMillis();  // start timeing
-          } else if (!event.hasTouches&& trials.checkTarget(event.start, event.end)) { // check goal
+          } else if (!event.hasTouches && trials.checkTarget(event.start, event.end)) { // check goal
             finishTrial(textArea);
             if (!startTrial(textArea)) {
+              textArea.deleteObservers();
               SMT.remove(tech);
               output.flush();
               output.close();
