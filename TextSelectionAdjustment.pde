@@ -24,13 +24,13 @@ private PrintWriter output;
 private final PFont screenFont = createFont("Arial Black", 20, true);
 private final int buttonWidth = 200;
 private final int buttionHeight = 50;
-private final PFont textAreaFont = createFont("Courier", 14);
+private final PFont textAreaFont = createFont("Courier", 11);
 
 private Zone banner;
 
 
 void setup() {
-  size(320, 550, SMT.RENDERER);
+  size(220, 405, SMT.RENDERER);
   SMT.init(this, TouchSource.AUTOMATIC);
   //  SMT.init(this, TouchSource.WM_TOUCH);
   SMT.setWarnUnimplemented(false);
@@ -40,8 +40,8 @@ void setup() {
   banner = new Zone("banner", -1, -1, 0, 0);
 
   final int buttonX = (width - buttonWidth) / 2;
-  SMT.add(new ButtonZone("handlesButton", buttonX, height - 5 * buttionHeight, buttonWidth, buttionHeight, "HANDLES", screenFont));
-  SMT.add(new ButtonZone("pinchButton", buttonX, height + 20 - 4 * buttionHeight, buttonWidth, buttionHeight, "PINCH", screenFont));
+  SMT.add(new ButtonZone("handlesButton", buttonX, height - 4 * buttionHeight, buttonWidth, buttionHeight, "HANDLES", screenFont));
+  SMT.add(new ButtonZone("pinchButton", buttonX, height + 20 - 3 * buttionHeight, buttonWidth, buttionHeight, "PINCH", screenFont));
 }
 
 void draw() {
@@ -51,8 +51,8 @@ void draw() {
     textFont(screenFont);
     fill(0);
     textAlign(CENTER, TOP);
-    text("Enter User ID: ", width / 2, 100);
-    text(userId + "_", width / 2, 150);
+    text("Enter User ID: ", width / 2, 70);
+    text(userId + "_", width / 2, 120);
     popStyle();
   } else if (endScreen) {
     pushStyle();
@@ -143,7 +143,7 @@ private void finishTrial(final TextArea textArea) {
 }
 
 private TextArea createTextArea() {
-  final TextArea textArea = new TextArea(17, 10, width - 30, height - 30);
+  final TextArea textArea = new TextArea(10, 5, width - 15, height - 20);
   textArea.textColor = 0;
   textArea.marginLeft = 5;
   textArea.marginRight = 5;

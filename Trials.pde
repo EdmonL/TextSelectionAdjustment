@@ -1,7 +1,7 @@
 static class Trials {
   
-  public static final int LINE_LENGTH = 34;
-  public static final int TOTAL_LINES = 23;
+  public static final int LINE_LENGTH = 27;
+  public static final int TOTAL_LINES = 21;
   public static final int TOTAL_CHARS = LINE_LENGTH * TOTAL_LINES;
   public static final int MAX_TARGET_LENGTH = LINE_LENGTH * 10;
   public static final int MIN_TARGET_LENGTH = 3;
