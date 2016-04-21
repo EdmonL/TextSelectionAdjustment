@@ -1,187 +1,295 @@
-static final class PinchSelectingZone extends TextAreaTouchZone {
+static final class PinchSelectingZone extends TextAreaTouchZone implements Observer {
 
-  private static final class TouchRecord { // these are the points delimiting the selection in text and accociated with the touch points
-    public final long id; // the touch point id that this inner point is associated with
-    public Point point; // the touch point; used as the last history to calculate touch point movement
-    public Point innerPoint; // I call as "inner pointers" the small points in demo which delimits the selection
+  private static final int MARK_WIDTH = 5;
 
-    TouchRecord(long id, final Point point, final Point innerPoint) {
-      this.id = id;
-      this.point = point;
-      this.innerPoint = innerPoint;
-    }
-  }
-
-  private final HashMap<Long, TouchRecord> touches = new HashMap<Long, TouchRecord>(); // touch point id -> inner point record; bindings between the inner points and touch points
+  private int selStartRow, selEndRow;
+  private final Point selStartTouchOffset = new Point(), selEndTouchOffset = new Point();
+  private Color myColor = new Color(0x40, 0x96, 0xb2, 240);
+  private final Map<Long, Boolean> touchRecords = new HashMap<Long, Boolean>();
 
   public PinchSelectingZone(final String name, final TextArea textArea) {
     super(name, textArea);
+    textArea.addObserver(this);
+  }
+
+  @Override public void update(final Observable o, final Object arg) {
+    if (arg instanceof TextSelectionEvent) {
+      final TextSelectionEvent event = (TextSelectionEvent) arg;
+      if (event.isInitial) {
+        selStartRow = event.startRow;
+        selEndRow = event.endRow;
+      }
+    }
   }
 
   @Override public void touchDown(final Touch touch) {
     super.touchDown(touch);
-    if (getNumTouches() != 2) {
-      touches.clear();
+    resetTouches();
+    if (textArea.hasSelection()) {
+      final Touch[] touches = getTouches();
+      switch (touches.length) {
+      case 1:
+        bindTouch(touches[0]);
+        break;
+      case 2:
+        bindTouches(touches[0], touches[1]);
+        break;
+      }
     }
-    bindTouches();
   }
 
   @Override public void touchUp(final Touch touch) {
     super.touchUp(touch);
-    if (getNumTouches() == 0) {
-      if (touches.size() == 2 && textArea.hasSelection()) {
-        final TextPosition[] tp = new TextPosition[2];
-        int i = 0;
-        for (final TouchRecord tr : touches.values()) {
-          tp[i++] = textArea.getTextPositionByInnerPoint(tr.innerPoint);
-        }
-        if (tp[0].offset != textArea.getSelectionStart()) {
-          final TextPosition tmp0 = tp[0];
-          tp[0] = tp[1];
-          tp[1] = tmp0;
-        }
+    resetTouches();
+    if (textArea.hasSelection()) {
+      final Touch[] touches = getTouches();
+      switch (touches.length) {
+      case 0:
         textArea.setChanged();
-        textArea.notifyObservers(new TextSelectionEvent(tp[0].offset, tp[0].row, tp[1].offset, tp[1].row, false, false));
+        textArea.notifyObservers(new TextSelectionEvent(textArea.getSelectionStart(), selStartRow, textArea.getSelectionEnd(), selEndRow, false, false));
+        break;
+      case 1:
+        bindTouch(touches[0]);
+        break;
+      case 2:
+        bindTouches(touches[0], touches[1]);
+        break;
       }
-      touches.clear();
     }
-    bindTouches();
   }
 
   @Override public void touchMoved(final Touch touch) {
     super.touchMoved(touch);
-    if (touches.size() != 2) {
+    final Boolean isStartMark = touchRecords.get(touch.sessionID);
+    if (isStartMark == null) {
       return;
     }
-    final Touch[] ts = getTouches();
-    if (ts.length != 2) {
-      return;
-    }
-    // goal: update touch record and set selection
-    // c indicates the current, l indicates the last, and o indicates the other
-    final Touch oTouch = (ts[0].sessionID == touch.sessionID ? ts[1] : ts[0]);
-    final TouchRecord ltr = touches.get(touch.sessionID);
-    final TouchRecord otr = touches.get(oTouch.sessionID);
-    if (ltr == null || otr == null) {
-      return;
-    }
-    final Point cp = new Point(touch.x, touch.y);
-    final Point lp = ltr.point;
-    if (lp.x == cp.x && lp.y == cp.y) {
+    final Touch[] touches = getTouches();
+    if (touches.length <= 0 || touches.length > 2) {
       return;
     }
 
-    final Point lip = ltr.innerPoint; // last inner point
-    Point cip = new Point(lip.x + cp.x - lp.x, lip.y + cp.y - lp.y);
-    final TextPosition otp = textArea.getTextPositionByInnerPoint(otr.innerPoint);
-
-    // visual consistency
-    // we need to stop fingers from coming across each other when the fingers are not doing so
-    // thinking about a senario where user pinch close multiple lines into one
-    // when the selection has reduced to one but user's fingers are still moving towards each other, we need to stop the selection expansion
-    // another case is we need to change the binding when multiple lines becomes one to confirm with our binding rule when,
-    // for example, the upper touch point (bound to the start of selection) becomes the right one on one line (ought to be bound to the end of selection).
-    if (cp.y < oTouch.y && cip.y > otr.innerPoint.y && lip.y <= otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y && lip.y >= otr.innerPoint.y) {
-      cip.y = otr.innerPoint.y;
+    final boolean isStart = isStartMark.booleanValue();
+    int textOffset, otherTextOffset, row, otherRow;
+    if (isStart) {
+      textOffset = textArea.getSelectionStart();
+      otherTextOffset = textArea.getSelectionEnd();
+      row = selStartRow;
+      otherRow = selEndRow;
+    } else {
+      textOffset = textArea.getSelectionEnd();
+      otherTextOffset = textArea.getSelectionStart();
+      row = selEndRow;
+      otherRow = selStartRow;
     }
-    final TextPosition ctp = textArea.getTextPositionByInnerPoint(cip);
-    if (ctp.row == otp.row) {
-      if (cp.x < oTouch.x && cip.x > otr.innerPoint.x && lip.x <= otr.innerPoint.x || cp.x > oTouch.x && cip.x < otr.innerPoint.x && lip.x >= otr.innerPoint.x) {
-        cip.x = otr.innerPoint.x;
-      }
+    final Point touchPoint = textArea.getInnerPointByPoint(touch.x, touch.y);
+    Point ip = new Point(touchPoint);
+    if (isStart) {
+      ip.translate(selStartTouchOffset.x, selStartTouchOffset.y);
+    } else {
+      ip.translate(selEndTouchOffset.x, selEndTouchOffset.y);
     }
-
-    // selection should not disappear; we need find as least a closest character to select
-    if (ctp.offset == otp.offset) {
-      final Point currentInnerPoint = textArea.getInnerPointByTextPosition(ctp);
-      if (ctp.offset == textArea.getLineEnd(ctp.row)) {
-        --ctp.offset;
-        cip.x = (int)Math.ceil((currentInnerPoint.x + textArea.getInnerPointByTextPosition(ctp).x) / 2.0) - 1;
-      } else if (ctp.offset == textArea.getLineOffset(ctp.row)) {
-        ++ctp.offset;
-        cip.x = (int)Math.ceil((currentInnerPoint.x + textArea.getInnerPointByTextPosition(ctp).x) / 2.0);
-      } else if (lip.x < otr.innerPoint.x) {
-        --ctp.offset;
-        cip.x = (int)Math.ceil((currentInnerPoint.x + textArea.getInnerPointByTextPosition(ctp).x) / 2.0) - 1;
-      } else {
-        ++ctp.offset;
-        cip.x = (int)Math.ceil((currentInnerPoint.x + textArea.getInnerPointByTextPosition(ctp).x) / 2.0);
-      }
+    TextPosition tp = textArea.getTextPositionByInnerPoint(ip);
+    if (textOffset == tp.offset && row == tp.row) {
+      return;
     }
 
-    textArea.setSelection(ctp.offset, otp.offset);
-
-    // visual consistency
-    // this is when fingers come across with each other but inner points do not.
-    // swap the inner points (bindings) if necessary
-    if (ctp.row == otp.row && (cp.y < oTouch.y && cip.y > otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y || cp.x < oTouch.x && cip.x > otr.innerPoint.x || cp.x > oTouch.x && cip.x < otr.innerPoint.x) 
-      || ctp.row != otp.row && (cp.y < oTouch.y && cip.y > otr.innerPoint.y || cp.y > oTouch.y && cip.y < otr.innerPoint.y)) {
-      cip = textArea.getInnerPointByTextPosition(ctp);
-      otr.innerPoint = textArea.getInnerPointByTextPosition(otp);
-      if (ctp.row == otp.row) {
-        if (cip.x < otr.innerPoint.x && cp.x > oTouch.x || cip.x > otr.innerPoint.x && cp.x < oTouch.x) {
-          swapPoint(cip, otr.innerPoint);
-        }
-      } else {
-        if (cip.y < otr.innerPoint.y && cp.y > oTouch.y || cip.y > otr.innerPoint.y && cp.y < oTouch.y) {
-          swapPoint(cip, otr.innerPoint);
+    if (touches.length == 1) {
+      ip = textArea.getInnerPointByTextPosition(tp.offset, tp.row);
+      if (row != tp.row && otherTextOffset == tp.offset) {
+        if (textArea.getLineOffset(tp.row) == tp.offset) {
+          ++tp.offset;
+        } else if (textArea.getLineEnd(tp.row) == tp.offset) {
+          --tp.offset;
+        } else {
+          if (touchPoint.x <= ip.x) {
+            --tp.offset;
+          } else {
+            ++tp.offset;
+          }
         }
       }
+      if (otherTextOffset == tp.offset) {
+        return;
+      }
+      textArea.setSelection(tp.offset, otherTextOffset);
+      if (isStart) {
+        selStartRow = tp.row;
+      } else {
+        selEndRow = tp.row;
+      }
+      final boolean newIsStart = tp.offset == textArea.getSelectionStart();
+      touchRecords.put(touch.sessionID, newIsStart);
+      if (newIsStart != isStart) {
+        final int tmpStart = selStartRow;
+        selStartRow = selEndRow;
+        selEndRow = tmpStart;
+        if (newIsStart) {
+          selStartTouchOffset.setLocation(selEndTouchOffset);
+        } else {
+          selEndTouchOffset.setLocation(selStartTouchOffset);
+        }
+      }
+      if (row == tp.row) {
+        if (newIsStart) {
+          selStartTouchOffset.y = ip.y - touchPoint.y;
+        } else {
+          selEndTouchOffset.y = ip.y - touchPoint.y;
+        }
+      }
+      return;
     }
-    // record the points as the history for next time move
-    final TouchRecord ctr = ltr;
-    ctr.point = cp;
-    ctr.innerPoint = cip;
+    final Touch otherTouch = touches[0].sessionID == touch.sessionID ? touches[1] : touches[0];
+    final Point otherTouchPoint = textArea.getInnerPointByPoint(otherTouch.x, otherTouch.y);
+    final Point oip = new Point(otherTouchPoint);
+    if (isStart) {
+      oip.translate(selEndTouchOffset.x, selEndTouchOffset.y);
+    } else {
+      oip.translate(selStartTouchOffset.x, selStartTouchOffset.y);
+    }
+    boolean rebind = false;
+    if (row <= otherRow && ip.y > oip.y && touchPoint.y <= otherTouchPoint.y || row >= otherRow && ip.y < oip.y && touchPoint.y >= otherTouchPoint.y) {
+      ip.y = oip.y;
+      tp = textArea.getTextPositionByInnerPoint(ip);
+      rebind = true;
+    }
+    if (row == otherRow && tp.row == otherRow && (textOffset <= otherTextOffset && ip.x > oip.x && touchPoint.x <= otherTouchPoint.x || textOffset >= otherTextOffset && ip.x < oip.x && touchPoint.x >= otherTouchPoint.x)) {
+      tp.offset = textOffset <= otherTextOffset ? otherTextOffset - 1 : otherTextOffset + 1;
+      rebind = true;
+    }
+    if (textOffset == tp.offset && row == tp.row) {
+      if (rebind) {
+        bindTouches(touch, otherTouch);
+      }
+      return;
+    }
+    if (row != tp.row && otherTextOffset == tp.offset) {
+      if (textArea.getLineOffset(tp.row) == tp.offset) {
+        ++tp.offset;
+      } else if (textArea.getLineEnd(tp.row) == tp.offset) {
+        --tp.offset;
+      } else if (touchPoint.x <= otherTouchPoint.x) {
+        --tp.offset;
+      } else {
+        ++tp.offset;
+      }
+    }
+    if (otherTextOffset == tp.offset) {
+      if (rebind) {
+        bindTouches(touch, otherTouch);
+      }
+      return;
+    }
+    textArea.setSelection(tp.offset, otherTextOffset);
+    if (isStart) {
+      selStartRow = tp.row;
+    } else {
+      selEndRow = tp.row;
+    }
+    final boolean newIsStart = tp.offset == textArea.getSelectionStart();
+    touchRecords.put(touch.sessionID, newIsStart);
+    touchRecords.put(otherTouch.sessionID, !newIsStart);
+    if (newIsStart != isStart) {
+      final int tmpStart = selStartRow;
+      selStartRow = selEndRow;
+      selEndRow = tmpStart;
+      swapPoint(selStartTouchOffset, selEndTouchOffset);
+    }
+    rebind = rebind || row != tp.row && tp.row == otherRow;
+    rebind = rebind || tp.row > otherRow && touchPoint.y < otherTouchPoint.y || tp.row < otherRow && touchPoint.y > otherTouchPoint.y;
+    rebind = rebind || tp.row == otherRow && (tp.offset < otherTextOffset && touchPoint.x > otherTouchPoint.x || tp.offset > otherTextOffset && touchPoint.x < otherTouchPoint.x);
+    if (rebind) {
+      bindTouches(touch, otherTouch);
+      return;
+    }
+    if (row == tp.row) {
+      if (newIsStart) {
+        selStartTouchOffset.y = ip.y - touchPoint.y;
+      } else {
+        selEndTouchOffset.y = ip.y - touchPoint.y;
+      }
+    }
   }
 
-  // this method decides which touch point is bound to the start of the selection or the end of it
-  private void bindTouches() {
-    final Touch[] ts = getTouches();
-    // some criteria to decide it's the time for binding
-    if (ts.length != 2 || !textArea.hasSelection()) {
-      return;
-    }
-    if (touches.size() == 2) {
-      for (final Touch t : ts) {
-        if (!touches.containsKey(t.sessionID)) {
-          touches.clear();
-          break;
+  @Override void draw() {
+    super.draw();
+    if (textArea.hasSelection()) {
+      final Touch[] touches = getTouches();
+      if (touches.length >= 1) {
+        final int lineHeight = textArea.getFontHeight();
+        pushStyle();
+        if (touches.length == 1) {
+          final Boolean isStart = touchRecords.get(touches[0].sessionID);
+          if (isStart != null) {
+            if (isStart.booleanValue()) {
+              drawStartMark(lineHeight);
+            } else {
+              drawEndMark(lineHeight);
+            }
+          }
+        } else {
+          drawStartMark(lineHeight);
+          drawEndMark(lineHeight);
         }
+        popStyle();
       }
+    }
+  }
+
+  private void bindTouch(final Touch touch) {
+    final Point startOffset = textArea.getInnerPointByTextPosition(textArea.getSelectionStart(), selStartRow);
+    final Point endOffset = textArea.getInnerPointByTextPosition(textArea.getSelectionEnd(), selEndRow);
+    final Point innerPoint = textArea.getInnerPointByPoint(touch.x, touch.y);
+    startOffset.translate(-innerPoint.x, -innerPoint.y);
+    endOffset.translate(-innerPoint.x, -innerPoint.y);
+    final boolean isStart = startOffset.x * startOffset.x + startOffset.y * startOffset.y <= endOffset.x * endOffset.x + endOffset.y * endOffset.y;
+    touchRecords.put(touch.sessionID, isStart);
+    if (isStart) {
+      selStartTouchOffset.setLocation(startOffset);
     } else {
-      touches.clear();
+      selEndTouchOffset.setLocation(endOffset);
     }
-    if (!touches.isEmpty()) {
-      return;
+  }
+
+  private void bindTouches(final Touch t0, final Touch t1) {
+    final boolean isT0Start = selStartRow == selEndRow ? t0.x <= t1.x : t0.y <= t1.y;
+    final Point startPoint = textArea.getInnerPointByTextPosition(textArea.getSelectionStart(), selStartRow);
+    final Point endPoint = textArea.getInnerPointByTextPosition(textArea.getSelectionEnd(), selEndRow);
+    final Point t0p = textArea.getInnerPointByPoint(t0.x, t0.y);
+    final Point t1p = textArea.getInnerPointByPoint(t1.x, t1.y);
+    if (isT0Start) {
+      touchRecords.put(t0.sessionID, true);
+      selStartTouchOffset.setLocation(startPoint.x - t0p.x, startPoint.y - t0p.y);
+      touchRecords.put(t1.sessionID, false);
+      selEndTouchOffset.setLocation(endPoint.x - t1p.x, endPoint.y - t1p.y);
+    } else {
+      touchRecords.put(t0.sessionID, false);
+      selEndTouchOffset.setLocation(endPoint.x - t0p.x, endPoint.y - t0p.y);
+      touchRecords.put(t1.sessionID, true);
+      selStartTouchOffset.setLocation(startPoint.x - t1p.x, startPoint.y - t1p.y);
     }
-    // binding; 
-    // the general rule is if there are multiple lines, upper touch point is bound to the start of selection
-    // if there is only one line selected, left touch point is bound to the start of selection
-    final int[] s = new int[2];
-    final int[] r = new int[2];
-    s[0] = textArea.getSelectionStart();
-    s[1] = textArea.getSelectionEnd();
-    r[0] = textArea.getRowByTextOffset(s[0]);
-    r[1] = textArea.getRowByTextOffset(s[1]);
-    if (r[0] == r[1]) {
-      if (ts[0].x > ts[1].x) {
-        final int tmp0 = s[0];
-        s[0] = s[1];
-        s[1] = tmp0;
-      }
-    } else if (ts[0].y > ts[1].y) {
-      int tmp0 = s[0];
-      s[0] = s[1];
-      s[1] = tmp0;
-      tmp0 = r[0];
-      r[0] = r[1];
-      r[1] = tmp0;
-    }
-    final TouchRecord[] tr = new TouchRecord[2];
-    for (int i = 0; i < 2; ++i) {
-      tr[i] = new TouchRecord(ts[i].sessionID, new Point(ts[i].x, ts[i].y), textArea.getInnerPointByTextOffset(s[i]));
-      touches.put(ts[i].sessionID, tr[i]);
-    }
+  }
+
+  private void resetTouches() {
+    selStartTouchOffset.setLocation(0, 0);
+    selEndTouchOffset.setLocation(0, 0);
+    touchRecords.clear();
+  }
+
+  private void drawStartMark(final int lineHeight) {
+    final Point point = textArea.getInnerPointByTextPosition(textArea.getSelectionStart(), selStartRow);
+    point.setLocation(point.x - 2, textArea.getLineTop(selStartRow));
+    noStroke();
+    fill(myColor.getRed(), myColor.getGreen(), myColor.getBlue(), myColor.getAlpha());
+    triangle(point.x, point.y, point.x, point.y + lineHeight, point.x - MARK_WIDTH, point.y + Math.round(lineHeight / 2.0));
+  }
+
+  private void drawEndMark(final int lineHeight) {
+    final Point point = textArea.getInnerPointByTextPosition(textArea.getSelectionEnd(), selEndRow);
+    point.setLocation(point.x + 2, textArea.getLineTop(selEndRow));
+    noStroke();
+    fill(myColor.getRed(), myColor.getGreen(), myColor.getBlue(), myColor.getAlpha());
+    triangle(point.x, point.y, point.x, point.y + lineHeight, point.x + MARK_WIDTH, point.y + Math.round(lineHeight / 2.0));
   }
 }
 

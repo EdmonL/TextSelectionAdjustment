@@ -9,7 +9,7 @@ static final class HandleZone extends Zone {
   private int textOffset, row;
   private boolean toLeft;
   private boolean isMoving;
-  private float scaling = 1.0;
+  private float scaling = 0.7;
   private final Point touchOffset = new Point();
   private Color myColor = new Color(0x40, 0x96, 0xb2, 240);
 
